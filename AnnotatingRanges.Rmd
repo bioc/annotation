@@ -147,7 +147,6 @@ suppressPackageStartupMessages(library(org.Mm.eg.db))
 </code></pre>
 
 ```{r}
-library(org.Mm.eg.db)
 keys <- unique(loc_mm10$GENEID)
 head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
 ```
