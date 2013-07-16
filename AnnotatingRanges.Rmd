@@ -218,10 +218,10 @@ GRanges in the R workspace.
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(ensemblVEP))
 ```
-<pre><code>library(ensemblVEP)
-</code></pre>
+
 
 ```{r}
+library(ensemblVEP)
 fl <- system.file("extdata", "ex2.vcf", 
                   package="VariantAnnotation")
 ```
