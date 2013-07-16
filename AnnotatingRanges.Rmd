@@ -148,7 +148,12 @@ head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
 The 'keytype' argument specifies that the mouse TranscriptDb contains 
 Ensembl instead of Entrez gene id's.
 
+```{r echo=FALSE, results="hide"}
+suppressPackageStarupMessages(library(org.Mm.eg.db))
+```
+
 ```{r}
+library(org.Mm.eg.db)
 keys <- unique(loc_mm10$GENEID)
 head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
 ```
