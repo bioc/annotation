@@ -1,39 +1,31 @@
-<!--
-%\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{Annotation}
--->
+![](/images/icons/help.gif)Annotating Ranges
+===============================================================
 
+Bioconductor can import diverse sequence-related file types, including
+fasta, fastq, BAM, gff, bed, and wig files, among others. Packages
+support common and advanced sequence manipulation operations such as
+trimming, transformation, and alignment.  Domain-specific analyses
+include quality assessment, ChIP-seq, differential expression,
+RNA-seq, and other approaches. Bioconductor includes an interface to
+the Sequence Read Archive (via the
+[SRAdb](/packages/release/bioc/html/SRAdb.html) package).
 
-![](/images/icons/help.gif)Using Bioconductor for Annotation
-============================================================
+* [Sample Workflow](#sample-workflow)  
+* [Data Preparation](#data-preparation)
+* [Location in and Around Genes](#location)
+* [Annotate by ID](#annotate-by-id)
+* [Annotate by Position](#annotate-by-position)
+* [Annotating Variants](#annotating-variants)
+* [Amino Acid Coding Changes](#amino-acid-coding-changes)
+* [ensemblVEP Package](#ensemblVEP-package)
 
-Bioconductor has extensive facilities for mapping between microarray
-probe, gene, pathway, gene ontology, homology and other annotations.
+<h2 id="sample-workflow">Sample Workflow</h2>
 
-Bioconductor has built-in representations of GO, KEGG, vendor, and
-other annotations, and can easily access NCBI, Biomart, UCSC, and
-other sources.
-
-* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
-* [Sample OrgDb Workflow](#sample-workflow-OrgDb)  
-* [Sample TranscriptDb Workflow](#sample-workflow-TranscriptDb)  
-* [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
-* [Making an OrganismDb package](#Making-an-OrganismDb-package)  
-* [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
-* [Using biomaRt](#Using-biomaRt)  
-* [Annotating Ranges](#Annotating-Ranges)  
-* [Installation and Use](#install-and-use)
-* [Exploring Package Content](#exploring-package-content)
-* [Annotation Resources](#annotation-resources)
-
-
-<h2 id="Annotating Ranges">Annotating Ranges</h2>
-
-This section walks through the annotation of a generic set of ranges
+This workflow walks through the annotation of a generic set of ranges
 with Bioconductor packages. The ranges can be any user-defined region 
 of interest or can be from a public file.
 
-<h3>Data Preparation</h3>
+<h3 id="data-preparation">Data Preparation</h3>
 
 As a first step, data are put into a GRanges object so we can take
 advantage of overlap operations and store identifiers as
@@ -110,7 +102,7 @@ unique(genome(txdb_mm10))
 genome(gr_mm10) <- "mm10"
 ```
 
-<h3>Location in and around genes</h3>
+<h3 id="location">Location in and Around Genes</h3>
 
 locateVariants() in the VariantAnnotation package annotates ranges
 with transcript, exon, cds and gene ID's from a TranscriptDb. Various
@@ -128,7 +120,7 @@ loc_mm10 <- locateVariants(gr_mm10, txdb_mm10, AllVariants())
 table(loc_mm10$LOCATION)
 ```
 
-<h3>Annotate by ID</h3>
+<h3 id="annotate-by-id">Annotate by ID</h3>
 
 The ID's returned from locateVariants() can be used in select() to map 
 to ID's in other annotation packages.
@@ -148,9 +140,11 @@ head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
 The 'keytype' argument specifies that the mouse TranscriptDb contains 
 Ensembl instead of Entrez gene id's.
 
-```{r echo=FALSE, results="hide"}
+```{r, echo=FALSE}
 suppressPackageStartupMessages(library(org.Mm.eg.db))
 ```
+<pre><code>library(org.Mm.eg.db)
+</code></pre>
 
 ```{r}
 library(org.Mm.eg.db)
@@ -158,7 +152,7 @@ keys <- unique(loc_mm10$GENEID)
 head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
 ```
 
-<h3>Annotate by position</h3>
+<h3 id="annotate-by-position">Annotate by Position</h3>
 
 Files stored in the AnnotationHub have been pre-processed into
 ranged-based R objects such as a GRanges, GAlignments and VCF.
@@ -195,9 +189,9 @@ lapply(ov_hg19, head, n=3)
 Annotating the mouse ranges in the same fashion is left 
 as an excercise.
 
-<h3>Annotating variants</h3>
+<h3 id="annotating-variants">Annotating Variants</h3>
 
-<h4>Amino acid coding changes</h4>
+<h4 id=amino-acid-coding-changes">Amino acid coding changes</h4>
 For the set of dbSNP variants that fall in coding regions, amino
 acid changes can be computed. The output contains one line for each 
 variant-transcript match which can result in multiple lines for
@@ -213,7 +207,7 @@ suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg19))
 head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
 ```
 
-<h4>Access to the Ensembl VEP tool</h4>
+<h4 id="VEP">ensemblVEP Package</h4>
 The ensemblVEP package provides access to the online Ensembl Variant
 Effect Predictor (VEP tool).  The VEP tool ouputs predictions
 of functional consequences of known and unknown variants as reported 
