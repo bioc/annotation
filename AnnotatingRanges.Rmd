@@ -149,7 +149,7 @@ The 'keytype' argument specifies that the mouse TranscriptDb contains
 Ensembl instead of Entrez gene id's.
 
 ```{r echo=FALSE, results="hide"}
-suppressPackageStarupMessages(library(org.Mm.eg.db))
+suppressPackageStartupMessages(library(org.Mm.eg.db))
 ```
 
 ```{r}
