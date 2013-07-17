@@ -8,7 +8,7 @@
 ============================================================
 
 Bioconductor has extensive facilities for mapping between microarray
-probe, gene, pathway, gene ontology, homology and other annotations.
+probe, gene, pathway, gene ontology, homology and other annotations. 
 
 Bioconductor has built-in representations of GO, KEGG, vendor, and
 other annotations, and can easily access NCBI, Biomart, UCSC, and
