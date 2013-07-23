@@ -16,8 +16,6 @@ the Sequence Read Archive (via the
 * [Annotate by ID](#annotate-by-id)
 * [Annotate by Position](#annotate-by-position)
 * [Annotating Variants](#annotating-variants)
-* [Amino Acid Coding Changes](#amino-acid-coding-changes)
-* [ensemblVEP Package](#ensemblVEP-package)
 
 <h2 id="sample-workflow">Sample Workflow</h2>
 

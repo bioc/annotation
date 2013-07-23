@@ -20,7 +20,6 @@ other sources.
 * [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
 * [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
-* [Finding Variants in & around Genes](#Finding-Variants-in-and-around-Genes)  
 * [Using biomaRt](#Using-biomaRt)  
 * [Installation and Use](#install-and-use)
 * [Exploring Package Content](#exploring-package-content)
@@ -463,58 +462,7 @@ annotations.  Now tab complete your way to the oreganno track and save
 it into a local variable.  
 
 
-
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
-
-
-
-<h2 id="Finding-Variants-in-and-around-Genes">Finding Variants in & around Genes</h2>
-
-Variant location with respect to genes can be identified with the
-locateVariants() function. Regions are specified in the region argument
-and can be one of the following constructors: CodingVariants(),
-IntronVariants(), FiveUTRVariants(), ThreeUTRVariants(),
-IntergenicVariants(), SpliceSiteVariants(), or AllVariants().
-
-
-To do this, the 1st thing we need annotation.  So load up a
-TranscriptDb object.
-```{r}
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene 
-```
-
-The next step is that we need some ranges to query.  One likely source
-of these is a vcf file.  The following code snippet reads in an
-example vcf file and then changes the seqlevels for that object so
-that it matches the chromosome naming convention used by the
-TranscriptDb object we loaded in the previous step.  Finally, the
-rowData accessor converts the vcf object into a GRanges object called rd.
-
-```{r}
-library(VariantAnnotation)
-fl <- system.file("extdata", "chr22.vcf.gz", package="VariantAnnotation")
-vcf <- readVcf(fl, "hg19")
-seqlevels(vcf, force=TRUE) <- c("22"="chr22")
-rd <- rowData(vcf)
-```
-
-Finally we can use the locateVariants function to see which variants
-are CodingVariants.  Coding variants are searched for by passing the
-appropriate constructor as the third argument.
-
-```{r}
-loc <- locateVariants(rd, txdb, CodingVariants())
-head(loc, 3)
-```
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
-
-
 
 
 <h2 id="Using-biomaRt">Using biomaRt</h2>
