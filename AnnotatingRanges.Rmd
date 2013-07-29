@@ -1,0 +1,269 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Annotating Ranges}
+-->
+
+![](/images/icons/help.gif)Annotating Ranges
+===============================================================
+
+Bioconductor can import diverse sequence-related file types, including
+fasta, fastq, BAM, gff, bed, and wig files, among others. Packages
+support common and advanced sequence manipulation operations such as
+trimming, transformation, and alignment.  Domain-specific analyses
+include quality assessment, ChIP-seq, differential expression,
+RNA-seq, and other approaches. Bioconductor includes an interface to
+the Sequence Read Archive (via the
+[SRAdb](/packages/release/bioc/html/SRAdb.html) package).
+
+* [Sample Workflow](#sample-workflow)  
+* [Data Preparation](#data-preparation)
+* [Location in and Around Genes](#location)
+* [Annotate by ID](#annotate-by-id)
+* [Annotate by Position](#annotate-by-position)
+* [Annotating Variants](#annotating-variants)
+
+<h2 id="sample-workflow">Sample Workflow</h2>
+
+This workflow walks through the annotation of a generic set of ranges
+with Bioconductor packages. The ranges can be any user-defined region 
+of interest or can be from a public file.
+
+<h3 id="data-preparation">Data Preparation</h3>
+
+As a first step, data are put into a GRanges object so we can take
+advantage of overlap operations and store identifiers as
+metadata columns.
+
+The first set of ranges are variants from a dbSNP Variant Call Format (VCF) 
+file. This file can be downloaded from the ftp site at NCBI
+[ftp://ftp.ncbi.nlm.nih.gov/snp/](ftp://ftp.ncbi.nlm.nih.gov/snp/) and
+imported with readVcf() from the VariantAnnotation package. Alternatively,
+the file is available as a pre-parsed VCF object in the AnnotationHub.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(VariantAnnotation))
+suppressPackageStartupMessages(library(AnnotationHub))
+```
+<pre><code>library(VariantAnnotation)
+library(AnnotationHub)
+</code></pre>
+
+
+```{r}
+hub <- AnnotationHub()
+vcf <- hub$dbSNP.organisms.human_9606.VCF.ByChromosome.22.12159.GIH.RData 
+dim(vcf)
+```
+
+When performing overlap operations the seqlevels and genome of the objects
+must match. Here were modify the VCF to match the TranscriptDb.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
+```
+<pre><code>library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+</code></pre>
+
+```{r}
+txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
+head(seqlevels(txdb_hg19))
+seqlevels(vcf)
+seqlevels(vcf) <- paste0("chr", seqlevels(vcf))
+unique(genome(txdb_hg19))
+genome(vcf) <- "hg19"
+```
+
+Sanity check to confirm we have matching seqlevels.
+```{r}
+intersect(seqlevels(txdb_hg19), seqlevels(vcf))
+```
+
+The GRanges in a VCF object is in the 'rowData' slot.
+```{r}
+gr_hg19 <- rowData(vcf)
+```
+
+The second set of ranges is a user-defined region of chromosome 4 in mouse.
+The idea here is that any region, known or unknown, can be annotated with
+the following steps.
+
+```{r}
+library(TxDb.Mmusculus.UCSC.mm10.ensGene)
+txdb_mm10 <- TxDb.Mmusculus.UCSC.mm10.ensGene
+```
+We are creating the GRanges from scratch and can specify the seqlevels 
+(chromosome names) to match the TranscriptDb. 
+
+```{r}
+head(seqlevels(txdb_mm10))
+gr_mm10 <- GRanges("chr4", IRanges(c(4000000, 107889000), width=1000))
+```
+
+Now assign the genome.
+```{r}
+unique(genome(txdb_mm10))
+genome(gr_mm10) <- "mm10"
+```
+
+<h3 id="location">Location in and Around Genes</h3>
+
+locateVariants() in the VariantAnnotation package annotates ranges
+with transcript, exon, cds and gene ID's from a TranscriptDb. Various
+extractions are performed on the TranscriptDb (exonsBy(), transcripts(), 
+cdsBy(), etc.) and the result is  overlapped with the ranges. An appropriate
+GRangesList can also be supplied as the annotation. Different variants
+such as 'coding', 'fiveUTR', 'threeUTR', 'spliceSite', 'intron', 
+'promoter',  and 'intergenic' can be searched for by passing the appropriate 
+constructor as the 'region' argument. See ?locateVariants for details.
+
+```{r}
+loc_hg19 <- locateVariants(gr_hg19, txdb_hg19, AllVariants())
+table(loc_hg19$LOCATION)
+loc_mm10 <- locateVariants(gr_mm10, txdb_mm10, AllVariants()) 
+table(loc_mm10$LOCATION)
+```
+
+<h3 id="annotate-by-id">Annotate by ID</h3>
+
+The ID's returned from locateVariants() can be used in select() to map 
+to ID's in other annotation packages.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(org.Hs.eg.db))
+```
+<pre><code>library(org.Hs.eg.db)
+</code></pre>
+
+```{r}
+cols <- c("UNIPROT", "PFAM")
+keys <- unique(loc_hg19$GENEID)
+head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
+```
+
+The 'keytype' argument specifies that the mouse TranscriptDb contains 
+Ensembl instead of Entrez gene id's.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(org.Mm.eg.db))
+```
+<pre><code>library(org.Mm.eg.db)
+</code></pre>
+
+```{r}
+keys <- unique(loc_mm10$GENEID)
+head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
+```
+
+<h3 id="annotate-by-position">Annotate by Position</h3>
+
+Files stored in the AnnotationHub have been pre-processed into
+ranged-based R objects such as a GRanges, GAlignments and VCF.
+The positions in our GRanges can be overlapped with the ranges in
+the AnnotationHub files. This allows for easy subsetting 
+of multiple files, resulting in only the ranges of interest.
+
+Create a 'hub' from AnnotationHub and filter the files based
+on organism.
+
+```{r}
+hub <- AnnotationHub()
+filters(hub) <- list(Species = "Homo sapiens")
+hg19_files <- names(hub)[grepl("hg19", names(hub))]
+length(hg19_files)
+```
+
+Extract the matching ranges from the first 3 files.
+```{r, echo=FALSE}
+ov_hg19 <- lapply(hg19_files[1:3], 
+             function(x) 
+               subsetByOverlaps(hub[[x]], gr_hg19))
+```
+<pre><code>
+ov_hg19 <- lapply(hg19_files[1:3], function(x) 
+                  subsetByOverlaps(hub$[[x]], gr_hg19))
+</code></pre>
+
+Take a look at the results.
+```{r} 
+names(ov_hg19) <- hg19_files[1:3]
+lapply(ov_hg19, head, n=3)
+```
+Annotating the mouse ranges in the same fashion is left 
+as an excercise.
+
+<h3 id="annotating-variants">Annotating Variants</h3>
+
+<h4 id=amino-acid-coding-changes">Amino acid coding changes</h4>
+For the set of dbSNP variants that fall in coding regions, amino
+acid changes can be computed. The output contains one line for each 
+variant-transcript match which can result in multiple lines for
+each variant.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg19))
+```
+<pre><code>library(BSgenome.Hsapiens.UCSC.hg19)
+</code></pre>
+
+```{r}
+head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
+```
+
+<h4 id="VEP">ensemblVEP Package</h4>
+The ensemblVEP package provides access to the online Ensembl Variant
+Effect Predictor (VEP tool).  The VEP tool ouputs predictions
+of functional consequences of known and unknown variants as reported 
+by Sequence Ontology or Ensembl. Regulatory region consequences, HGNC, 
+Ensembl protein identifiers, HGVS, co-located variants are optional outputs.
+ensemblVEP() accepts the name of a VCF file and returns a VCF on disk or
+GRanges in the R workspace.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(ensemblVEP))
+```
+
+
+```{r}
+library(ensemblVEP)
+fl <- system.file("extdata", "ex2.vcf", 
+                  package="VariantAnnotation")
+```
+```{r, echo=FALSE}
+gr <- ensemblVEP(fl)
+```
+<pre><code>gr <- ensemblVEP(fl)
+</code></pre>
+
+```{r}
+head(gr, 3)
+```
+
+Exercise 1: VCF header and reading data subsets.
+
+VCF files can be large and it's often the case that only a subset of 
+variables or genomic positions are of interest. The scanVcfHeader() 
+function in the VariantAnnotation package retrieves header information 
+from a VCF file. Based on the information returned from scanVcfHeader() 
+a ScanVcfParam() object can be created to read in a subset of data from 
+a VCF file. 
+*  Use scanVcfHeader() to inspect the header information in the
+   'chr22.vcf.gz' file in VariantAnnotation package.
+*  Select a few 'info' or 'geno' variables and create a ScanVcfParam object.
+*  Use the ScanVcfParam object as the 'param' argument to readVcf()
+   to read in a subset of data.
+Note that the header() accessor operates on VCF objects in the R
+workspace. Try header(vcf) on the dbSNP file from AnnotationHub. 
+
+Exercise 2: Annotate the mouse ranges in 'gr_mm10' with AnnotationHub files.
+*  Create a new 'hub' and filter on organism.
+*  Isolate the files for the appropriate genome build and perform overlaps. 
+ 
+Exercise 3: Annotate a gene range from Saccharomyces Scerevisiae.
+*  Load TxDb.Scerevisiae.UCSC.sacCer3.sgdGene and extract the
+   gene ranges. (Hint: use transcriptsBy() and range()).
+*  Isolate the range for gene "YBL086C".
+*  Create a new 'hub' from AnnotationHub and filter by organism.
+   (You should see >= 39 files.)
+*  Select the files for 'sacCer3' and perform overlaps.
+
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
