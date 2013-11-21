@@ -19,6 +19,7 @@ other sources.
 * [Sample TranscriptDb Workflow](#sample-workflow-TranscriptDb)  
 * [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
+* [Making full use of keys](#full-use-of-keys)  
 * [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
 * [Using biomaRt](#Using-biomaRt)  
 * [Installation and Use](#install-and-use)
@@ -333,9 +334,6 @@ more detail
 [here](http://www.bioconductor.org/packages/release/bioc/vignettes/OrganismDbi/inst/doc/OrganismDbi.pdf).
 
 
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
 
 <h3>Exercises for OrganismDb objects.</h3>
 
@@ -353,9 +351,61 @@ between TXSTART and CHRLOC?  Which one do you think you should use for
 transcripts or other genomic information?
 
 
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+
+
+
+
+<h2 id="full-use-of-keys">Making full use of keys</h2>
+Lets look more closely at the keys method.  We have already talked
+about how you can use it to do this:
+
+```{r}
+library(Homo.sapiens)
+keys <- head(keys(Homo.sapiens, keytype="ENTREZID"), n=2)
+```
+
+And then you can use it with select to look up other kinds of
+information.  But what if you only know partial information about the
+keys you are looking up?  In Bioconductor 2.13 and higher there are
+extra arguments for the keys method that you can make use of to find
+keys that match certain criteria.  The most useful is probably the
+pattern argument.  The pattern argument allows you to find out which
+keys match a certain pattern.  So for example, you can look up entrez
+gene IDs that start with a "2" like this:
+
+```{r}
+head(keys(Homo.sapiens, keytype="ENTREZID", pattern="^2"), n=6)
+```
+Or you could look up gene symbols that start with "MS":
+
+```{r}
+head(keys(Homo.sapiens, keytype="SYMBOL", pattern="^MS"), n=6)
+```
+If your string matching is too specific, you could also try to use
+fuzzy matching by setting the fuzzy argument to TRUE:
+
+```{r}
+head(keys(Homo.sapiens, keytype="SYMBOL", pattern="^MS", fuzzy=TRUE), n=6)
+```
+ And if you want to match one one key and actually return another, then you can use the column argument to indicate which key you want to search for pattern on while using the keytype to indicate which kind of key you want returned.  So you could (for example) get back ensembl IDs where the symbol starts with "MS".
+
+```{r}
+keys <- head(keys(Homo.sapiens, keytype="ENSEMBL", pattern="^MS", column="SYMBOL"), n=6)
+keys
+select(Homo.sapiens, keys, "SYMBOL", keytype="ENSEMBL")
+```
+
+
+<h3>Exercises for OrganismDb objects.</h3>
+Exercise 8: Use the Homo.sapiens object with the keys method to look
+up the entrez gene IDs for all gene symbols that contain the letter
+"X". 
 
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+
+
 
 
 
@@ -450,13 +500,13 @@ length(ah)
 
 <h3>Exercises for AnnotationHub.</h3>
 
-Exercise 8: Set the AnnotationHub filter to NULL to clear it out, and
+Exercise 9: Set the AnnotationHub filter to NULL to clear it out, and
 then set ip up so that it is extracting data that originated with the
 UCSC data provider and that is also limited to Homo sapiens and the
 hg19 genome.
 
 
-Exercise 9: Now that you have basically narrowed things down to the
+Exercise 10 Now that you have basically narrowed things down to the
 hg19 annotations from UCSC genome browser, lets get one of these
 annotations.  Now tab complete your way to the oreganno track and save
 it into a local variable.  
@@ -538,11 +588,11 @@ head(getBM(attributes='affy_hg_u133_plus_2', mart = ensembl))
 
 <h3>Exercises for biomaRt.</h3>
 
-Exercise 10: Pull down GO terms for entrez gene id "1" from human by
+Exercise 11: Pull down GO terms for entrez gene id "1" from human by
 using the ensembl "hsapiens_gene_ensembl" dataset.
 
 
-Exercise 11: Now compare the GO terms you just pulled down to the same
+Exercise 12: Now compare the GO terms you just pulled down to the same
 GO terms from the org.Hs.eg.db package (which you can now retrieve
 using select()). What differences do you notice? Why do you suspect
 that is?
@@ -886,7 +936,20 @@ strongly recommend using TXSTART instead of CHRLOC.  Howeverm CHRLOC
 still remains in the org packages for historical reasons.
 
 
-<h3>Exercise 8:</h3>
+<h3>Exercise 8</h3>
+To find the keys that match, make use of the pattern and column arguments.
+```{r}
+library(Homo.sapiens)
+xk = head(keys(Homo.sapiens, keytype="ENTREZID", pattern="X", column="SYMBOL"))
+xk
+```
+select verifies the results
+```{r}
+select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
+```
+
+
+<h3>Exercise 9:</h3>
 
 The 1st thing you need to do is look at the keytypes:
 ```{r}
@@ -908,7 +971,7 @@ length(ah)
 ```
 
 
-<h3>Exercise 9:</h3>
+<h3>Exercise 10:</h3>
 
 This pulls down the oreganno annotations.  Which are described on the
 UCSC site thusly: "This track displays literature-curated regulatory
@@ -923,7 +986,7 @@ res <- ah$goldenpath.hg19.database.oreganno_0.0.1.RData
 
 
 
-<h3>Exercise 10:</h3>
+<h3>Exercise 11:</h3>
 
 ```{r}
 library("biomaRt")
@@ -937,7 +1000,7 @@ getBM(attributes=c('go_id', 'entrezgene'),
 
 
 
-<h3>Exercise 11:</h3>
+<h3>Exercise 12:</h3>
 
 ```{r}
 library(org.Hs.eg.db)
