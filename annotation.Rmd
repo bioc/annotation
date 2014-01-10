@@ -508,7 +508,7 @@ on the top right corner of the page or the in-column search field for
 "Species".
 
 
-<img src="display.png">
+<img src="display.png" width="50%">
 
 
 By default 1000 entries are displayed per page, we can change this using
