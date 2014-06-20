@@ -3,7 +3,6 @@
 %\VignetteIndexEntry{Annotation}
 -->
 
-
 ![](/images/icons/help.gif)Using Bioconductor for Annotation
 ============================================================
 
@@ -21,7 +20,8 @@ other sources.
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
 * [Making full use of keys](#full-use-of-keys)  
 * [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
-* [Using biomaRt](#Using-biomaRt)  
+* [Using biomaRt](#Using-biomaRt)
+* [BSgenome packages](#using-BSgenome)
 * [Installation and Use](#install-and-use)
 * [Exploring Package Content](#exploring-package-content)
 * [Annotation Resources](#annotation-resources)
@@ -608,6 +608,7 @@ an attribute like this:
 head(getBM(attributes='affy_hg_u133_plus_2', mart = ensembl))
 ```
 
+Of course if you find the standard biomaRt methods difficult to work with, you can now also use the standard select methods here.  
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
@@ -629,7 +630,39 @@ that is?
 
 
 
+<h2 id="using-BSgenome">BSgenome packages</h2>
 
+There are many BSgenome packages in the repository too.  These packages contain sequence data for sequenced organisms.  You can load one of these packages just like this:
+
+```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
+ls(2)
+Hsapiens
+```
+
+The getSeq method is useful for extracting data from these pacakges. This method takes several arguments but the important ones are the 1st two.  The 1st argument specifies the BSgenome object to use and the second argument (names) specifies what data you want back out.  So for example, if you call it and give a character vector that names the seqnames for the object then you will get the sequences from those chromosomes as a DNAStringSet object.
+
+```{r}
+seqNms <- seqnames(Hsapiens)
+head(seqNms)
+getSeq(Hsapiens, seqNms[1:2])
+```
+
+Whereas if you give the a GRanges object for the 2nd argument, you can instead get a DNA StringSet that corresponds to those ranges.
+
+```{r}
+rngs <- GRanges(seqnames = c('chr1', 'chr4'), strand=c('+','-'),
+                ranges = IRanges(start=c(100000,300000), 
+                                 end=c(100023,300037)))
+rngs
+res <- getSeq(Hsapiens, rngs)
+res
+```
+
+This can be a very powerful way to quickly get sequences of interest.  And for more useful tools the BSgenome package also has useful functions for finding a pattern in a string set etc.
+
+
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 <h2 id="install-and-use">Installation and Use</h2>
 
@@ -741,6 +774,11 @@ packages](/packages/release/BiocViews.html#___AnnotationData).
   web based annotation resources. Such data is extremely "current", so
   it is a good idea to save and locally manage the data that you pull
   down from biomaRt so that your code will be reproducible.
+* [VariantAnnotation](/packages/release/bioc/html/VariantAnnotation.html)
+  This package contains useful tools for managing genetic data and for      
+  quickly assessing if a detected change is inside of a coding region 
+  or not.
+
 
 ### Types of Annotation Packages ###
 
