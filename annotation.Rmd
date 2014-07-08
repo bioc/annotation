@@ -14,10 +14,10 @@ other annotations, and can easily access NCBI, Biomart, UCSC, and
 other sources.
 
 * [Sample OrgDb Workflow](#sample-workflow-OrgDb)  
+* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
 * [Sample TranscriptDb Workflow](#sample-workflow-TranscriptDb)  
 * [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
-* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
 * [Making full use of keys](#full-use-of-keys)  
 * [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
 * [Using biomaRt](#Using-biomaRt)
@@ -47,6 +47,10 @@ different kinds of packages (OrganismDb).
 
 The organism wide gene centered packages (OrgDb packages) all contain
 gene centered data for an organism.  These packages are the primary place for storing data that can be directly associated with genes.  Lets take a closer look at the organism package for human:
+```{r echo=FALSE}
+suppressPackageStartupMessages(library(org.Hs.eg.db))
+```
+
 ```{r}
 library(org.Hs.eg.db)
 ```
@@ -86,24 +90,46 @@ select(org.Hs.eg.db, keys=ids, columns=c("GENENAME", "SYMBOL"), keytype="ENTREZI
 ```
 
 
-But where would we normally get the "ids" that we would pass in to the keys argument? Usually these kinds of ids come from other datasets.
+But where would we normally get the "ids" that we would pass in to the keys argument? Usually these kinds of ids come from the result of a data analysis.  Here I will load an experiment data package to provide us with an example data set to look at:
 
 ```{r}
+library("parathyroidSE")
+data(exonicParts)
+exonicParts[1:3]
 ```
 
-
-We can also find and extract the GO ids associated with the first id (there are quite a few of these)
-
+Now having loaded this dataset, I can extract the ensembl gene IDs contained in this object like this:
 ```{r}
-id = ids[1]
-res <- select(org.Hs.eg.db, keys=id, columns="GO", keytype="ENTREZID")
+ids = unlist(mcols(exonicParts)$gene_id)
+head(ids)
+```
+
+From here I can look up gene symbols for these ids like this.  Notice how I have to specify the correct (different from before) keytype in order to extract these:
+```{r}
+res <- select(org.Hs.eg.db, keys=ids, columns="SYMBOL", keytype="ENSEMBL")
 head(res)
 ```
 
-You may have noticed that the above request results in many rows for just one input id.  Somemetimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This just has to do with the structure of the underlying data.  This is sometimes called a many to one relationship.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  Requesting multiple many to one relationships at once will result in a multiplication of the returned rows and is not recommended as you can very quickly generate a data.frame object that is both very large and progressivly less useful.  The best practice is to use select carefully, and to not request multiple many to one values at any one time.
+And if I am careful to make sure that there were not any many to one relationships changing the size of the result data.frame, then I can even put these gene symbols back into the initial object:
+```{r}
+dim(res)[1] == length(exonicParts)
+newMcols <- cbind(mcols(exonicParts), res[,2,drop=FALSE])
+mcols(exonicParts) <- newMcols
+exonicParts[1:3]
+```
 
 
-We can also use the GO.db package to find the Terms associated with those GOIDs. How will this work? Well the GO.db package will load a GO.db object that can be used in a manner similar to what we just saw with our OrgDb object org.Hs.eg.db. So we can use the same four methods that we just learned about (columns, keytypes, keys and select), to extract whatever data we need from this object.
+Of course we can look up many things other than just gene names and symbols.  For example, we could also extract the GO ids associated with the first id like this:
+
+```{r}
+id = ids[1]
+res <- select(org.Hs.eg.db, keys=id, columns="GO", keytype="ENSEMBL")
+head(res)
+```
+
+You may have noticed that the above request results in many rows for just one input id (and that a warning was issued about this).  Sometimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This just has to do with the structure of the underlying data.  This is sometimes called a many to one relationship.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  The reason for the warning is because this behavior might not be what you were expecting.  If you request multiple many to one relationships at once it will result in a multiplication of the returned rows as each row will be a unique combination of these data.  So this is not recommended as you can very quickly generate a data.frame object that is both very large and not very useful.  The best practice is to use select carefully, and to not request more than one many to one value at any one time.
+
+When making use of GO ids, you can also use the GO.db package to find the Terms associated with those GO ids.  The GO.db package will load a GOdb object that can be used in a manner similar to what we just saw with our OrgDb object for org.Hs.eg.db.  And we can use the same four methods that we just learned about (columns, keytypes, keys and select), to extract whatever data we need.
 
 ```{r}
 library("GO.db")
@@ -116,7 +142,7 @@ head(select(GO.db, keys=res$GO, columns="TERM", keytype="GOID"))
 
 Exercise 1: Look at the help page for the different columns and keytypes values with: help("SYMBOL").  Now use this information and what we just described to look up the entrez gene and chromosome for the gene symbol "MSX2".
 
-Exercise 3: In the previous exercise we had to use gene symbols as
+Exercise 2: In the previous exercise we had to use gene symbols as
 keys.  But in the past this kind of behavior has sometimes been
 inadvisable because some gene symbols are used as the official symbol
 for more than one gene.  To learn if this is still happening take
@@ -172,24 +198,20 @@ And from here you can use the new ChipDb object in the same way that you learned
 ```{r}
 columns(hgu95av2.db)
 keytypes(hgu95av2.db)
-columns <- c("PFAM","GO", "SYMBOL")
+columns <- c("PFAM","SYMBOL")
 select(hgu95av2.db, keys=ids, columns, keytype="PROBEID")
 ```
 
 
 <h3>Exercises for ChipDb objects.</h3>
 
-Exercise 2: Examine the gene symbols for both the hgu95av2.db and the
+Exercise 3: Examine the gene symbols for both the hgu95av2.db and the
 org.Hs.eg.db packages.  Which one has more gene symbols?  Which one
 has more gene symbols that can be mapped to an entrez gene ID?  Which
 object seems to contain more information?
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
-
-
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
 
@@ -875,7 +897,25 @@ select(org.Hs.eg.db, keys, columns, keytype="SYMBOL")
 ```
 
 
+
 <h3>Exercise 2:</h3>
+
+```{r}
+egr <- select(org.Hs.eg.db, orgSymbols, "ENTREZID", "SYMBOL")
+length(egr$ENTREZID)
+length(unique(egr$ENTREZID))
+## VS:
+length(egr$SYMBOL)
+length(unique(egr$SYMBOL))
+## So lets trap these symbols that are redundant and look more closely...
+redund <- egr$SYMBOL
+badSymbols <- redund[duplicated(redund)]
+select(org.Hs.eg.db, badSymbols, "ENTREZID", "SYMBOL")
+```
+
+
+
+<h3>Exercise 3:</h3>
 
 Initially you might expect that hgu95av2.db will have less information
 in it.  After all, it's an old Affymetrix platform that was developed
@@ -911,20 +951,6 @@ look up the probes Ids.
 head(select(hgu95av2.db,chipSymbols, "PROBEID", "SYMBOL"))
 ```
 
-<h3>Exercise 3:</h3>
-
-```{r}
-egr <- select(org.Hs.eg.db, orgSymbols, "ENTREZID", "SYMBOL")
-length(egr$ENTREZID)
-length(unique(egr$ENTREZID))
-## VS:
-length(egr$SYMBOL)
-length(unique(egr$SYMBOL))
-## So lets trap these symbols that are redundant and look more closely...
-redund <- egr$SYMBOL
-badSymbols <- redund[duplicated(redund)]
-select(org.Hs.eg.db, badSymbols, "ENTREZID", "SYMBOL")
-```
 
 
 <h3>Exercise 4:</h3>
