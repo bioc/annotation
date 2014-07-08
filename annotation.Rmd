@@ -45,7 +45,7 @@ different kinds of packages (OrganismDb).
 
 <h2 id="sample-workflow-OrgDb">Sample OrgDb Workflow</h2>
 
-The organism wide gene centered packages (OrgDb packages) all contain
+The organism wide gene centered packages (OrgDb packages) each contain
 gene centered data for an organism.  These packages are the primary place for storing data that can be directly associated with genes.  Lets take a closer look at the organism package for human:
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(org.Hs.eg.db))
@@ -68,12 +68,12 @@ keytypes method
 keytypes(org.Hs.eg.db)
 ```
 
-To extract viable keys of a particular kind, use the keys method.
+And to extract viable keys of a particular kind (keytype), we can use the keys method.
 ```{r}
 head(keys(org.Hs.eg.db, keytype="ENTREZID"))
 ```
 
-Since the keys method can tell us spefic things that can be used as keys, here we will use it to extract a few ids to use for demonstrating the fourth method type.
+Since the keys method can tell us specific things that can be used as keys, here we will use it to extract a few ids to use for demonstrating the fourth method type.
 ```{r}
 ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
 ```
@@ -98,13 +98,13 @@ data(exonicParts)
 exonicParts[1:3]
 ```
 
-Now having loaded this dataset, I can extract the ensembl gene IDs contained in this object like this:
+Now having just loaded this dataset, I can extract the ensembl gene IDs contained in this object like this:
 ```{r}
 ids = unlist(mcols(exonicParts)$gene_id)
 head(ids)
 ```
 
-From here I can look up gene symbols for these ids like this.  Notice how I have to specify the correct (different from before) keytype in order to extract these:
+From here I can look up gene symbols for these ids by using the select method like this.  Notice how I have to specify the correct (and different from before) keytype in order to extract these:
 ```{r}
 res <- select(org.Hs.eg.db, keys=ids, columns="SYMBOL", keytype="ENSEMBL")
 head(res)
@@ -127,7 +127,7 @@ res <- select(org.Hs.eg.db, keys=id, columns="GO", keytype="ENSEMBL")
 head(res)
 ```
 
-You may have noticed that the above request results in many rows for just one input id (and that a warning was issued about this).  Sometimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This just has to do with the structure of the underlying data.  This is sometimes called a many to one relationship.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  The reason for the warning is because this behavior might not be what you were expecting.  If you request multiple many to one relationships at once it will result in a multiplication of the returned rows as each row will be a unique combination of these data.  So this is not recommended as you can very quickly generate a data.frame object that is both very large and not very useful.  The best practice is to use select carefully, and to not request more than one many to one value at any one time.
+You may have noticed that the above request results in many rows for just one input id (and that a warning was issued about this).  Sometimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This is caused by the structure of the underlying data.  This kind of data is sometimes said to have a many to one relationship because there are many things that can match to each key.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  A warning is issued in this case because this behavior might not be what you were expecting.  If you request multiple many to one relationships at once, it will result in a multiplication of the returned rows as each row will represent a unique combination of the data that you asked for.  This is not recommended as you can very quickly generate a data.frame object that is both very large and simultaneously not very useful.  For best results, use select carefully, and avoid requesting more than one many to one value at any given time.
 
 When making use of GO ids, you can also use the GO.db package to find the Terms associated with those GO ids.  The GO.db package will load a GOdb object that can be used in a manner similar to what we just saw with our OrgDb object for org.Hs.eg.db.  And we can use the same four methods that we just learned about (columns, keytypes, keys and select), to extract whatever data we need.
 
