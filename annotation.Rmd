@@ -901,7 +901,10 @@ select(org.Hs.eg.db, keys, columns, keytype="SYMBOL")
 <h3>Exercise 2:</h3>
 
 ```{r}
-egr <- select(org.Hs.eg.db, orgSymbols, "ENTREZID", "SYMBOL")
+## 1st get all the gene symbols
+orgSymbols <- keys(org.Hs.eg.db, keytype="SYMBOL")
+## and then use that to get all gene symbols matched to all entrez gene IDs
+egr <- select(org.Hs.eg.db, keys=orgSymbols, "ENTREZID", "SYMBOL")
 length(egr$ENTREZID)
 length(unique(egr$ENTREZID))
 ## VS:
