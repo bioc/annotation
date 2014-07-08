@@ -13,11 +13,11 @@ Bioconductor has built-in representations of GO, KEGG, vendor, and
 other annotations, and can easily access NCBI, Biomart, UCSC, and
 other sources.
 
-* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
 * [Sample OrgDb Workflow](#sample-workflow-OrgDb)  
 * [Sample TranscriptDb Workflow](#sample-workflow-TranscriptDb)  
 * [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
+* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
 * [Making full use of keys](#full-use-of-keys)  
 * [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
 * [Using biomaRt](#Using-biomaRt)
@@ -40,6 +40,93 @@ transcriptome (TranscriptDb).  This document will talk about typical
 uses for most of these more popular kinds of annotation package.  As
 well as describe a newer meta package that wraps access to several
 different kinds of packages (OrganismDb).
+
+
+
+<h2 id="sample-workflow-OrgDb">Sample OrgDb Workflow</h2>
+
+The organism wide gene centered packages (OrgDb packages) all contain
+gene centered data for an organism.  These packages are the primary place for storing data that can be directly associated with genes.  Lets take a closer look at the organism package for human:
+```{r}
+library(org.Hs.eg.db)
+```
+
+Once loaded, each OrgDb object can be accessed using the following four methods:
+
+To list the kinds of things that can be retrieved, use the columns method.
+```{r}
+columns(org.Hs.eg.db)
+```
+
+To list the kinds of things that can be used as keys we can use the
+keytypes method
+```{r}
+keytypes(org.Hs.eg.db)
+```
+
+To extract viable keys of a particular kind, use the keys method.
+```{r}
+head(keys(org.Hs.eg.db, keytype="ENTREZID"))
+```
+
+Since the keys method can tell us spefic things that can be used as keys, here we will use it to extract a few ids to use for demonstrating the fourth method type.
+```{r}
+ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
+```
+
+
+Once you have some ids that you want to look up data for, the select method allows you to map these ids as long as you use the columns argument to indicate what you need to know and the keytype argument to specify what kind of keys they are.
+```{r}
+select(org.Hs.eg.db, keys=ids, columns="SYMBOL", keytype="ENTREZID")
+```
+
+And since the columns argument can take a vector of valid columns, you can look up multiple things at once.
+```{r}
+select(org.Hs.eg.db, keys=ids, columns=c("GENENAME", "SYMBOL"), keytype="ENTREZID")
+```
+
+
+But where would we normally get the "ids" that we would pass in to the keys argument? Usually these kinds of ids come from other datasets.
+
+```{r}
+```
+
+
+We can also find and extract the GO ids associated with the first id (there are quite a few of these)
+
+```{r}
+id = ids[1]
+res <- select(org.Hs.eg.db, keys=id, columns="GO", keytype="ENTREZID")
+head(res)
+```
+
+You may have noticed that the above request results in many rows for just one input id.  Somemetimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This just has to do with the structure of the underlying data.  This is sometimes called a many to one relationship.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  Requesting multiple many to one relationships at once will result in a multiplication of the returned rows and is not recommended as you can very quickly generate a data.frame object that is both very large and progressivly less useful.  The best practice is to use select carefully, and to not request multiple many to one values at any one time.
+
+
+We can also use the GO.db package to find the Terms associated with those GOIDs. How will this work? Well the GO.db package will load a GO.db object that can be used in a manner similar to what we just saw with our OrgDb object org.Hs.eg.db. So we can use the same four methods that we just learned about (columns, keytypes, keys and select), to extract whatever data we need from this object.
+
+```{r}
+library("GO.db")
+head(res$GO)  ## shows what we are using as keys
+head(select(GO.db, keys=res$GO, columns="TERM", keytype="GOID"))
+```
+
+
+<h3>Exercises for OrgDb objects.</h3>
+
+Exercise 1: Look at the help page for the different columns and keytypes values with: help("SYMBOL").  Now use this information and what we just described to look up the entrez gene and chromosome for the gene symbol "MSX2".
+
+Exercise 3: In the previous exercise we had to use gene symbols as
+keys.  But in the past this kind of behavior has sometimes been
+inadvisable because some gene symbols are used as the official symbol
+for more than one gene.  To learn if this is still happening take
+advantage of the fact that entrez gene ids are uniquely assigned, and
+extract all of the gene symbols and their associated entrez gene ids
+from the org.Hs.eg.db package. Then check the symbols for redundancy.
+
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+
+
 
 
 
@@ -78,104 +165,28 @@ Load libraries as sources of annotation
 library("hgu95av2.db")
 ```
 
-To list the kinds of things that can be retrieved, use the columns method.
+
+And from here you can use the new ChipDb object in the same way that you learned to use an OrgDb object before.  The only real change is that the ChipDb object will also have data about how platform specific probes match to specific genes.  So for example:
+
+
 ```{r}
 columns(hgu95av2.db)
-```
-
-To list the kinds of things that can be used as keys we can use the
-keytypes method
-```{r}
 keytypes(hgu95av2.db)
-```
-
-
-To extract viable keys of a particular kind, use the keys method.
-```{r}
-head(keys(hgu95av2.db, keytype="ENTREZID"))
-```
-
-The select method allows you to map probe ids to ENTREZ gene ids...
-```{r}
-select(hgu95av2.db, keys=ids, columns="ENTREZID", keytype="PROBEID")
-```
-
-Or to gene names and gene symbols etc.
-```{r}
-select(hgu95av2.db, keys=ids, columns=c("ENTREZID","GENENAME", "SYMBOL"), keytype="PROBEID")
-```
-
-We can also find and extract the GO ids associated with the first id (there are quite a few of these)
-
-```{r}
-res <- select(hgu95av2.db, keys=ids[1], columns="GO", keytype="PROBEID")
-head(res)
-```
-
-And then once we have done that, we can also use the GO.db package to
-find the Terms associated with those GOIDs. How will this work? Well
-the GO.db package will load a GO.db object that can be used in a
-manner similar to what we just saw with our ChipDb object hgu95av2.db.
-So we can use the same four methods that we just learned about (columns,
-keytypes, keys and select), to extract whatever data we need from this
-object.
-
-```{r}
-library("GO.db")
-head(res$GO)  ## shows what we are using as keys
-head(select(GO.db, keys=res$GO, columns="TERM", keytype="GOID"))
-```
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
-
-
-
-<h2 id="sample-workflow-OrgDb">Sample OrgDb Workflow</h2>
-
-The organism wide gene centered packages (OrgDb packages) all contain
-gene centered data for an organism.  These packages are accessed in
-much the same way as the platform based (ChipDb) package and the Go.db
-package the we just discussed.  But because they are general, they
-don't contain information like probe IDs that would relate to any
-specific microarray platform.  
-
-But the more important thing to understand is that the same methods
-apply.  So for example you can look up information in this way:
-
-```{r}
-library(org.Hs.eg.db)
-keys <- head(keys(org.Hs.eg.db, keytype="ENTREZID"), n=2)
 columns <- c("PFAM","GO", "SYMBOL")
-select(org.Hs.eg.db, keys, columns, keytype="ENTREZID")
+select(hgu95av2.db, keys=ids, columns, keytype="PROBEID")
 ```
 
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
-
-
-<h3>Exercises for ChipDb and OrgDb objects.</h3>
-
-Exercise 1: Look at the help page for the different columns and keytypes
-values with: help("SYMBOL").  Now use this information and what we
-just described to look up the entrez gene, probe id and chromosome for
-the gene symbol "MSX2".
-
+<h3>Exercises for ChipDb objects.</h3>
 
 Exercise 2: Examine the gene symbols for both the hgu95av2.db and the
 org.Hs.eg.db packages.  Which one has more gene symbols?  Which one
 has more gene symbols that can be mapped to an entrez gene ID?  Which
 object seems to contain more information?
 
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
-Exercise 3: In the previous exercise we had to use gene symbols as
-keys.  But in the past this kind of behavior has sometimes been
-inadvisable because some gene symbols are used as the official symbol
-for more than one gene.  To learn if this is still happening take
-advantage of the fact that entrez gene ids are uniquely assigned, and
-extract all of the gene symbols and their associated entrez gene ids
-from the org.Hs.eg.db package. Then check the symbols for redundancy.
+
 
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
@@ -859,8 +870,8 @@ packages](/packages/release/BiocViews.html#___AnnotationData).
 
 ```{r}
 keys <- "MSX2"
-columns <- c("ENTREZID","PROBEID", "CHR")
-select(hgu95av2.db, keys, columns, keytype="SYMBOL")
+columns <- c("ENTREZID", "CHR")
+select(org.Hs.eg.db, keys, columns, keytype="SYMBOL")
 ```
 
 
