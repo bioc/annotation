@@ -3,6 +3,9 @@
 %\VignetteIndexEntry{Annotation}
 -->
 
+
+
+
 ![](/images/icons/help.gif)Using Bioconductor for Annotation
 ============================================================
 
@@ -26,21 +29,21 @@ other sources.
 * [Exploring Package Content](#exploring-package-content)
 * [Annotation Resources](#annotation-resources)
 
+
+
 <h2 id="package-type">Package Types</h2> Bioconductor contains many
 different types of annotation packages.  You can browse the currently
 available types here
 [here](http://www.bioconductor.org/packages/release/BiocViews.html#___PackageType)
 by simply using the bioconductor web site.
 
-You will see that there are packages that contain annotation data
-about a particular microarray platform (ChipDb), there are packages
-that contain gene centered data about an organism (OrgDb), and even
-packages that contain genome centered data about an organisms
-transcriptome (TranscriptDb).  This document will talk about typical
-uses for most of these more popular kinds of annotation package.  As
-well as describe a newer meta package that wraps access to several
-different kinds of packages (OrganismDb).
+On the web site you will see many different kinds of packages.  One of the largest categories are the many platform specific packages that contain annotation data about a particular microarray platform (ChipDb objects).  But there are also many org packages that contain gene centered data about an organism (OrgDb objects).   And there are even packages that contain genome centered data about an organisms transcriptome (TranscriptDb objects) or genome (BSgenome objects).
 
+This document will demonstrate some of the more typical use cases for most of the more popular kinds of annotation packages (and their associated objects).  
+
+<img src="databaseTypes.png" width="50%">
+
+The above diagram shows some of the major classes of object types that are supported in this project and diagrams how they are typically related to each other.  Later we will also cover a class of meta annotation object that can wrap access to several different kinds of related annotation objects into a single container (OrganismDb objects).  
 
 
 <h2 id="sample-workflow-OrgDb">Sample OrgDb Workflow</h2>
@@ -98,7 +101,7 @@ data(exonicParts)
 exonicParts[1:3]
 ```
 
-Now having just loaded this dataset, I can extract the ensembl gene IDs contained in this object like this:
+Now having just loaded this data set, I can extract the ensembl gene IDs contained in this object like this:
 ```{r}
 ids = unlist(mcols(exonicParts)$gene_id)
 head(ids)
