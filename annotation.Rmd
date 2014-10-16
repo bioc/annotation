@@ -18,7 +18,7 @@ other sources.
 
 * [Sample OrgDb Workflow](#sample-workflow-OrgDb)  
 * [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
-* [Sample TranscriptDb Workflow](#sample-workflow-TranscriptDb)  
+* [Sample TxDb Workflow](#sample-workflow-TxDb)  
 * [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
 * [Making an OrganismDb package](#Making-an-OrganismDb-package)  
 * [Making full use of keys](#full-use-of-keys)  
@@ -37,7 +37,7 @@ available types here
 [here](http://www.bioconductor.org/packages/release/BiocViews.html#___PackageType)
 by simply using the bioconductor web site.
 
-On the web site you will see many different kinds of packages.  One of the largest categories are the many platform specific packages that contain annotation data about a particular microarray platform (ChipDb objects).  But there are also many org packages that contain gene centered data about an organism (OrgDb objects).   And there are even packages that contain genome centered data about an organisms transcriptome (TranscriptDb objects) or genome (BSgenome objects).
+On the web site you will see many different kinds of packages.  One of the largest categories are the many platform specific packages that contain annotation data about a particular microarray platform (ChipDb objects).  But there are also many org packages that contain gene centered data about an organism (OrgDb objects).   And there are even packages that contain genome centered data about an organisms transcriptome (TxDb objects) or genome (BSgenome objects).
 
 This document will demonstrate some of the more typical use cases for most of the more popular kinds of annotation packages (and their associated objects).  
 
@@ -219,9 +219,9 @@ object seems to contain more information?
 
 
 
-<h2 id="sample-workflow-TranscriptDb">Sample TranscriptDb Workflow</h2>
+<h2 id="sample-workflow-TxDb">Sample TxDb Workflow</h2>
 
-The genome centered TranscriptDb packages support the same interface
+The genome centered TxDb packages support the same interface
 as that ChipDb and the OrgDb packages.
 
 ```{r echo=FALSE}
@@ -237,7 +237,7 @@ select(txdb, keys, columns, keytype="GENEID")
 ```
 
 But in addition to supporting the standard set of methods (select,
-keytypes, keys and columns).  The TranscriptDb objects also support
+keytypes, keys and columns).  The TxDb objects also support
 methods to retrieve the annotations as ranges.  These accessors break
 down into two basic categories.  The most basic will return
 annotations as GRanges objects.  Some examples of these are:
@@ -264,7 +264,7 @@ transcripts(txdb, columns = c("tx_id","tx_name","gene_id"))
 ```
 
 
-The 2nd kind of range accessor supported by TranscriptDb objects are
+The 2nd kind of range accessor supported by TxDb objects are
 the ones that return GRangesList objects.  Some examples of these are:
 transcriptsBy(), exonsBy() or cdsBy().  These accessors just allow you
 to return a GRangesList object that contains the desired ranges by
@@ -280,7 +280,7 @@ transcriptsBy(txdb, by="gene")
 
 
 
-<h3>Exercises for TranscriptDb objects.</h3>
+<h3>Exercises for TxDb objects.</h3>
 
 Exercise 4: Use the accessors for the
 TxDb.Hsapiens.UCSC.hg19.knownGene package to retrieve the gene id,
@@ -292,7 +292,7 @@ method.   What is the difference in the output?
 Exercise 5: Load the TxDb.Athaliana.BioMart.plantsmart16 package. This
 package is not from UCSC and it is based on plantsmart.  Now use
 select or one of the range based accessors to look at the gene ids
-from this TranscriptDb object.  How tdo they compare to what you saw
+from this TxDb object.  How tdo they compare to what you saw
 in the TxDb.Hsapiens.UCSC.hg19.knownGene package?
 
 
@@ -307,10 +307,10 @@ in the TxDb.Hsapiens.UCSC.hg19.knownGene package?
 <h2 id="sample-workflow-OrganismDb">Sample OrganismDb Workflow</h2>
 
 What if you wanted to combine all the good stuff from the GO.db
-package with what you find in the appropriate TranscriptDb and OrgDb
+package with what you find in the appropriate TxDb and OrgDb
 packages for an organism?  Then you would want to use an OrganismDb
 package.  An example of an OrganismDb package is the Homo.sapiens
-package.  Like the OrgDb, ChipDb and TranscriptDb packages, it
+package.  Like the OrgDb, ChipDb and TxDb packages, it
 supports the use of select, keytypes, keys and columns.  
 
 ```{r echo=FALSE}
@@ -324,9 +324,9 @@ columns <- c("SYMBOL","TXNAME")
 select(Homo.sapiens, keys, columns, keytype="ENTREZID")
 ```
 
-When an OrganismDb package knows about a relevant TranscriptDb
+When an OrganismDb package knows about a relevant TxDb
 package, it can also support the ranged accessors introduced with the
-TranscriptDb objects.
+TxDb objects.
 
 ```{r}
 transcripts(Homo.sapiens, columns=c("TXNAME","SYMBOL"))
@@ -376,7 +376,7 @@ more detail
 Exercise 6: Use the Homo.sapiens object to look up the gene symbol,
 transcript start and chromosome using select().  Then do the same
 thing using transcripts.  You might expect that this call to
-transcripts will look the same as it did for the TranscriptDb object,
+transcripts will look the same as it did for the TxDb object,
 but (temporarily) it will not.
 
 Exercise 7: Look at the results from call the columns method on the
@@ -784,7 +784,7 @@ packages](/packages/release/BiocViews.html#___AnnotationData).
   the hg19 build of the human genome all as if it were contained in a
   single convenient object.
 * [GenomicFeatures](/packages/release/bioc/html/.html)
-  GenomicFeatures allows the existance of TranscriptDb objects and
+  GenomicFeatures allows the existance of TxDb objects and
   allows convenient representation of ranges from Transcritomes.
   There are accessors for things like exons, transcripts as well as
   the select method for retrieving data from packages supported by
@@ -993,7 +993,7 @@ res <- transcripts(TxDb.Athaliana.BioMart.plantsmart16, columns = c("gene_id"))
 You will notice that the gene ids for this package are TAIR locus IDs
 and are NOT entrez gene IDs like what you saw in the
 TxDb.Hsapiens.UCSC.hg19.knownGene package.  It's important to always
-pay attention to the kind of gene id is being used by the TranscriptDb
+pay attention to the kind of gene id is being used by the TxDb
 you are looking at.
 
 
@@ -1028,16 +1028,16 @@ columns(TxDb.Hsapiens.UCSC.hg19.knownGene)
 transcripts(Homo.sapiens, columns=c("SYMBOL","CHRLOC"))
 ```
 The key difference is that the TXSTART refers to the start of a
-transcript and originates in the TranscriptDb object from the
+transcript and originates in the TxDb object from the
 TxDb.Hsapiens.UCSC.hg19.knownGene package, while the CHRLOC refers to
 the same thing but originates in the OrgDb object from the
 org.Hs.eg.db package.  The point of origin is significant because the
-TranscriptDb object represents a transcriptome from UCSC and the OrgDb
+TxDb object represents a transcriptome from UCSC and the OrgDb
 is primarily gene centric data that originates at NCBI.  The upshot is
 that CHRLOC will not have as many regions represented as TXSTART,
 since there has to be an official gene for there to even be a record.
 The CHRLOC data is also locked in for org.Hs.eg.db as data for hg19,
-whereas you can swap in a different TranscriptDb object to match the
+whereas you can swap in a different TxDb object to match the
 genome you are using to make it hg18 etc.  For these reasons, we
 strongly recommend using TXSTART instead of CHRLOC.  Howeverm CHRLOC
 still remains in the org packages for historical reasons.

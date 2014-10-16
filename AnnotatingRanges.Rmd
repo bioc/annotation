@@ -56,7 +56,7 @@ dim(vcf)
 ```
 
 When performing overlap operations the seqlevels and genome of the objects
-must match. Here were modify the VCF to match the TranscriptDb.
+must match. Here were modify the VCF to match the TxDb.
 
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
@@ -92,7 +92,7 @@ library(TxDb.Mmusculus.UCSC.mm10.ensGene)
 txdb_mm10 <- TxDb.Mmusculus.UCSC.mm10.ensGene
 ```
 We are creating the GRanges from scratch and can specify the seqlevels 
-(chromosome names) to match the TranscriptDb. 
+(chromosome names) to match the TxDb. 
 
 ```{r}
 head(seqlevels(txdb_mm10))
@@ -108,8 +108,8 @@ genome(gr_mm10) <- "mm10"
 <h3 id="location">Location in and Around Genes</h3>
 
 locateVariants() in the VariantAnnotation package annotates ranges
-with transcript, exon, cds and gene ID's from a TranscriptDb. Various
-extractions are performed on the TranscriptDb (exonsBy(), transcripts(), 
+with transcript, exon, cds and gene ID's from a TxDb. Various
+extractions are performed on the TxDb (exonsBy(), transcripts(), 
 cdsBy(), etc.) and the result is  overlapped with the ranges. An appropriate
 GRangesList can also be supplied as the annotation. Different variants
 such as 'coding', 'fiveUTR', 'threeUTR', 'spliceSite', 'intron', 
@@ -140,7 +140,7 @@ keys <- unique(loc_hg19$GENEID)
 head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
 ```
 
-The 'keytype' argument specifies that the mouse TranscriptDb contains 
+The 'keytype' argument specifies that the mouse TxDb contains 
 Ensembl instead of Entrez gene id's.
 
 ```{r, echo=FALSE}
