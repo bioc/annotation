@@ -988,7 +988,7 @@ automatically be returned as part of the object.
 
 ```{r}
 library(TxDb.Athaliana.BioMart.plantsmart22)
-res <- transcripts(TxDb.Athaliana.BioMart.plantsmarts22, columns = c("gene_id")) 
+res <- transcripts(TxDb.Athaliana.BioMart.plantsmart22, columns = c("gene_id")) 
 ```
 You will notice that the gene ids for this package are TAIR locus IDs
 and are NOT entrez gene IDs like what you saw in the
