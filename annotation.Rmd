@@ -987,7 +987,7 @@ automatically be returned as part of the object.
 <h3>Exercise 5:</h3>
 
 ```{r}
-library(TxDb.Athaliana.BioMart.plantsmart16)
+library(TxDb.Athaliana.BioMart.plantsmart22)
 res <- transcripts(TxDb.Athaliana.BioMart.plantsmart16, columns = c("gene_id")) 
 ```
 You will notice that the gene ids for this package are TAIR locus IDs
