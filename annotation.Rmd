@@ -289,7 +289,7 @@ this using both the select() method and also using the transcripts()
 method.   What is the difference in the output?
 
 
-Exercise 5: Load the TxDb.Athaliana.BioMart.plantsmart16 package. This
+Exercise 5: Load the TxDb.Athaliana.BioMart.plantsmart22 package. This
 package is not from UCSC and it is based on plantsmart.  Now use
 select or one of the range based accessors to look at the gene ids
 from this TxDb object.  How tdo they compare to what you saw
@@ -988,7 +988,7 @@ automatically be returned as part of the object.
 
 ```{r}
 library(TxDb.Athaliana.BioMart.plantsmart22)
-res <- transcripts(TxDb.Athaliana.BioMart.plantsmart16, columns = c("gene_id")) 
+res <- transcripts(TxDb.Athaliana.BioMart.plantsmarts22, columns = c("gene_id")) 
 ```
 You will notice that the gene ids for this package are TAIR locus IDs
 and are NOT entrez gene IDs like what you saw in the
