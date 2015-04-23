@@ -60,16 +60,25 @@ library(org.Hs.eg.db)
 
 Once loaded, each OrgDb object can be accessed using the following four methods:
 
+<h4>columns()</h4>
+
 To list the kinds of things that can be retrieved, use the columns method.
 ```{r}
 columns(org.Hs.eg.db)
 ```
+
+
+<h4>keytypes()</h4>
 
 To list the kinds of things that can be used as keys we can use the
 keytypes method
 ```{r}
 keytypes(org.Hs.eg.db)
 ```
+
+
+<h4>keys()</h4>
+
 
 And to extract viable keys of a particular kind (keytype), we can use the keys method.
 ```{r}
@@ -81,6 +90,8 @@ Since the keys method can tell us specific things that can be used as keys, here
 ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
 ```
 
+
+<h4>select()</h4>
 
 Once you have some ids that you want to look up data for, the select method allows you to map these ids as long as you use the columns argument to indicate what you need to know and the keytype argument to specify what kind of keys they are.
 ```{r}
@@ -94,6 +105,9 @@ select(org.Hs.eg.db, keys=ids, columns=c("GENENAME", "SYMBOL"), keytype="ENTREZI
 
 
 But where would we normally get the "ids" that we would pass in to the keys argument? Usually these kinds of ids come from the result of a data analysis.  Here I will load an experiment data package to provide us with an example data set to look at:
+
+
+<h4>An example with some data</h4>
 
 ```{r}
 library("parathyroidSE")
@@ -139,6 +153,39 @@ library("GO.db")
 head(res$GO)  ## shows what we are using as keys
 head(select(GO.db, keys=res$GO, columns="TERM", keytype="GOID"))
 ```
+
+
+
+<h4>mapids()</h4>
+
+
+Sometimes you might want something 'simpler' than the select method.  This can happen if perhaps you are only interested in getting a character vector which quickly retrieves values that match a set of IDs.  For this sort of use case we also have added the mapIds accessor.  Lets suppose that you have some entrez gene ids and you just want to get the gene symbol for them.  You could do it like this:
+
+```{r}
+ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
+mapIds(org.Hs.eg.db, keys=ids, column='SYMBOL', keytype='ENTREZID')
+```
+
+The main difference between select() and mapIds() is that mapIds expects that you want a simple named vector object as a return value where the id that you started with are the named of the value returned.  Because it is not returning a data.frame, mapIds has an extra argument (multiVals) to indicate how you would like to handle the case where multiple things match your keys.  By default, mapIds will just give you the 1st of the matching objects like so:
+
+```{r}
+mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID')
+```
+
+But you can also ask it to return other kinds of vectors like a list, CharacterList etc.:
+
+```{r}
+mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID', multiVals='CharacterList')
+```
+
+Or you can even define your own behavior and just pass in the function to multiVals:
+
+```{r}
+last <- function(x){x[[length(x)]]}
+mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID', multiVals=last)
+```
+
+
 
 
 <h3>Exercises for OrgDb objects.</h3>
@@ -467,66 +514,93 @@ create an AnnotationHub object.  Notice that unlike the other
 packages, with AnnotationHub, you have to create an AnnotationHub
 object when you 1st start up your R session.
 
-```{r}
+```{r, eval=FALSE}
 library(AnnotationHub)
 
-ah = AnnotationHub()
+ah <- AnnotationHub()
 ```
 
-Once you have done this, you can "find" any of the available resources
-just by tab completing along a path like this.
+```{r, echo=FALSE}
+library(AnnotationHub)
+suppressMessages(ah <- AnnotationHub())
+```
 
+
+You can think of the AnnotationHub object as being a little bit like a list.  So you can see how many records are present by looking at the length like this:
 
 ```{r}
-res <- ah$goldenpath.hg19.encodeDCC.wgEncodeUwTfbs.wgEncodeUwTfbsMcf7CtcfStdPkRep1.narrowPeak_0.0.1.RData
+length(ah)
+```
 
+And the show method for the AnnotationHub will also try to tell you about what it contains.  It will preferentially show you the most common kinds of data inside of it, so these values will change as you carve away things that you are uninterested in.
+
+```{r}
+ah
+```
+
+
+The AnnotationHub resource currently has a LOT of different data in it.  So to really make use of that, you need to be able to find the data that is of specific interest to you.  To get started, you can just use the '$' operator and then just tab complete like this.
+
+```{r,eval=FALSE}
+ah$
+```
+
+And if you hit tab, that should give an output like this:
+```{}
+ah$ah_id         ah$dataprovider  ah$taxonomyid    ah$description   ah$rdataclass    ah$sourcetype
+ah$title         ah$species       ah$genome        ah$tags          ah$sourceurl     
+```
+
+Each of the above contains a column of metadata values that can be used to filter the AnnotationHub data.  You can look at the possible contents of any specific one by using unique.
+
+```{r}
+unique(ah$sourcetype)
+```
+
+So from this you can make decisions about how you want to subset out the parts of the AnnotationHub that you want to explore in more detail.  Lets suppose that you are interested in data that was initially a 'BED' file.  You have already seen above that those would be the resources where the sourcetype is 'BED'.  So you can use the subset method to throw away all the other kinds of data.
+
+```{r}
+ahs <- subset(ah, ah$sourcetype=='BED')
+length(ahs)
+```
+
+So now we have gone from almost 20 thousand entries to about 7500.  That helps, but we probably need to look closer than that.  So lets look again but this time lets look at the dataprovider information:
+
+```{r}
+table(ahs$dataprovider)
+```
+
+From here lets say you are interested in the EncodeDCC data.  You can get it like before:
+
+```{r}
+ahs2 <- subset(ahs, ah$dataprovider=='EncodeDCC')
+ahs2
+```
+
+And you can also use the powerful query function to subset based on matching a string in the metadata.  So lets further simplify to only those records where the  data is a 'gappedPeak'.
+
+```{r}
+ahs3 <- query(ahs2, 'gappedPeak')
+ahs3
+```
+
+From here you can hopefully see what you need.  So the only thing remaining to do is to retrieve your record.  Doing so works just like subsetting on a list like object.  So you can either retrieve it by position:
+
+```{r}
+res <- ahs3[[2]]
+```
+
+Or by name:
+
+```{r}
+res <- ahs3[["AH15223"]]
 res
 ```
 
-In the above example, AnnotationHub will retrieve, download and cache
-locally the file that you tab-completed to, and then store the results
-in "res".
-
-
-Now you can see how many ways there are to currently complete that
-path, by checking the length of the AnnotationHub object:
+And if you just want to explore the metadata entirely in R as a DataFrame, then you can also get all of the relevant metadata from the object with the mcols method like this:
 
 ```{r}
-length(ah)
-```
-
-The AnnotationHub is still a pretty new resource, and we already hav a
-LOT of things in there!  How can we narrow this down?  Right now we
-can use filters. By default, there are no filters applied, so calling
-filters() on our AnnotationHub is just an empty list.
-
-```{r}
-filters(ah)
-```
-
-What things can be used as filters?  We can use the columns() method to find out.
-
-
-```{r}
-columns(ah)
-```
-
-What values can be used with these filters?  Here, the keys method will give us an answer.
-
-
-```{r}
-head(keys(ah, keytype="Species"))
-```
-
-So now we know what we need to apply a filter to our AnnotationHub.
-The following filter will limit our AnnotationHub to just those
-entries that correspond to cattle (Bos taurus).
-
-
-```{r}
-filters(ah) <- list(Species="Bos taurus")
-
-length(ah)
+meta <- mcols(ah)
 ```
 
 
