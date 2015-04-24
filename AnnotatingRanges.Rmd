@@ -170,7 +170,7 @@ on organism.
 ```{r}
 hub <- AnnotationHub()
 hub2 <- subset(hub, hub$species == "Homo sapiens")
-hg19_files <- subset(hub2, shub$genome == 'hg19')
+hg19_files <- subset(hub2, hub2$genome == 'hg19')
 length(hg19_files)
 ```
 
