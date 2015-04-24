@@ -51,7 +51,7 @@ library(AnnotationHub)
 
 ```{r}
 hub <- AnnotationHub()
-vcf <- hub$dbSNP.organisms.human_9606.VCF.ByChromosome.22.12159.GIH.RData 
+vcf <- hub[['AH7477']] 
 dim(vcf)
 ```
 
@@ -167,8 +167,8 @@ on organism.
 
 ```{r}
 hub <- AnnotationHub()
-filters(hub) <- list(Species = "Homo sapiens")
-hg19_files <- names(hub)[grepl("hg19", names(hub))]
+hub2 <- subset(hub, hub$species == "Homo sapiens")
+hg19_files <- subset(hub2, shub$genome == 'hg19')
 length(hg19_files)
 ```
 
