@@ -146,8 +146,10 @@ Ensembl instead of Entrez gene id's.
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(org.Mm.eg.db))
 ```
-<pre><code>library(org.Mm.eg.db)
-</code></pre>
+
+```{r}
+library(org.Mm.eg.db)
+```
 
 ```{r}
 keys <- unique(loc_mm10$GENEID)
