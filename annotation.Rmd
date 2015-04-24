@@ -644,8 +644,8 @@ hg19 genome.
 
 Exercise 10 Now that you have basically narrowed things down to the
 hg19 annotations from UCSC genome browser, lets get one of these
-annotations.  Now tab complete your way to the oreganno track and save
-it into a local variable.  
+annotations.  Find the oreganno track and save it into a local
+variable.  
 
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
@@ -1162,7 +1162,11 @@ detailed information on a particular regulatory element, follow the
 link to ORegAnno from the details page."
 
 ```{r}
-res <- ah$goldenpath.hg19.database.oreganno_0.0.1.RData
+ahs <- query(ah, 'oreganno')
+ahs
+ahs[1]
+oreg <- ahs[['AH5087']]
+oreg
 ```
 
 
