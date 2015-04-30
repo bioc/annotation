@@ -636,11 +636,7 @@ AnnotationHub object.
 
 <h3>Exercises for AnnotationHub.</h3>
 
-Exercise 9: Set the AnnotationHub filter to NULL to clear it out, and
-then set ip up so that it is extracting data that originated with the
-UCSC data provider and that is also limited to Homo sapiens and the
-hg19 genome.
-
+Exercise 9: Use the AnnotationHub to extract UCSC data that is from Homo sapiens and also specifically from the hg19 genome. What happens to the hub object as you filter data at each step?
 
 Exercise 10 Now that you have basically narrowed things down to the
 hg19 annotations from UCSC genome browser, lets get one of these
@@ -1132,24 +1128,19 @@ select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
 
 <h3>Exercise 9:</h3>
 
-The 1st thing you need to do is look at the keytypes:
+The 1st thing you need to do is look for thing from UCSC
 ```{r}
-keytypes(ah)
+ahs <- query(ah, "UCSC")
 ```
 
-Then you want to look at possible values for DataProvider and for Genome.
+Then you can look for Genome values that match 'hg19' and a species that matches 'Homo sapiens'.
 ```{r}
-keys(ah, keytype="DataProvider")
-head(keys(ah, keytype="Genome"))
+ahs <- subset(ahs, ahs$genome=='hg19')
+length(ahs)
+ahs <- subset(ahs, ahs$species=='Homo sapiens') 
+length(ahs)
 ```
-
-```{r}
-filters(ah) <- NULL
-filters(ah) <- list(Species="Homo sapiens", 
-                    DataProvider="hgdownload.cse.ucsc.edu",
-		    Genome="hg19")
-length(ah)
-```
+You might notice that the last two filtering steps are redundant (IOW doing either one of them is the same as doing both of them.)  If this were not the case, we might suspect that there was a problem with the metadata.
 
 
 <h3>Exercise 10:</h3>
