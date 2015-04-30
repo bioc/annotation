@@ -78,22 +78,22 @@ Sanity check to confirm we have matching seqlevels.
 intersect(seqlevels(txdb_hg19), seqlevels(vcf))
 ```
 
-The GRanges in a VCF object is in the 'rowData' slot.
+The GRanges in a VCF object is extracted with 'rowRanges()'.
 ```{r}
-gr_hg19 <- rowData(vcf)
+gr_hg19 <- rowRanges(vcf)
 ```
 
 The second set of ranges is a user-defined region of chromosome 4 in mouse.
 The idea here is that any region, known or unknown, can be annotated with
 the following steps.
 
+Load the TxDb package and keep only the standard chromosomes.
 ```{r}
 library(TxDb.Mmusculus.UCSC.mm10.ensGene)
-txdb_mm10 <- TxDb.Mmusculus.UCSC.mm10.ensGene
+txdb_mm10 <- keepStandardChromosomes(TxDb.Mmusculus.UCSC.mm10.ensGene)
 ```
 We are creating the GRanges from scratch and can specify the seqlevels 
 (chromosome names) to match the TxDb. 
-
 ```{r}
 head(seqlevels(txdb_mm10))
 gr_mm10 <- GRanges("chr4", IRanges(c(4000000, 107889000), width=1000))
@@ -136,7 +136,7 @@ suppressPackageStartupMessages(library(org.Hs.eg.db))
 
 ```{r}
 cols <- c("UNIPROT", "PFAM")
-keys <- unique(loc_hg19$GENEID)
+keys <- na.omit(unique(loc_hg19$GENEID))
 head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
 ```
 
@@ -165,33 +165,30 @@ the AnnotationHub files. This allows for easy subsetting
 of multiple files, resulting in only the ranges of interest.
 
 Create a 'hub' from AnnotationHub and filter the files based
-on organism.
+on organism and genome build.
 
 ```{r}
 hub <- AnnotationHub()
-hub2 <- subset(hub, hub$species == "Homo sapiens")
-hg19_files <- subset(hub2, hub2$genome == 'hg19')
-length(hg19_files)
+hub_hg19 <- subset(hub, 
+                  (hub$species == "Homo sapiens") & (hub$genome == "hg19"))
+length(hub_hg19)
 ```
 
-Extract the matching ranges from the first 3 files.
+Iterate over the first 3 files and extract ranges that overlap 'gr_hg19'.
 ```{r, echo=FALSE}
-ov_hg19 <- lapply(hg19_files[1:3], 
-             function(x) 
-               subsetByOverlaps(hub[[x]], gr_hg19))
+ov_hg19 <- lapply(1:3, function(i) subsetByOverlaps(hub_hg19[[i]], gr_hg19))
 ```
 <pre><code>
-ov_hg19 <- lapply(hg19_files[1:3], function(x) 
-                  subsetByOverlaps(hub$[[x]], gr_hg19))
+ov_hg19 <- lapply(1:3, function(i) subsetByOverlaps(hub_hg19[[i]], gr_hg19))
 </code></pre>
 
-Take a look at the results.
+Inspect the results.
 ```{r} 
-names(ov_hg19) <- hg19_files[1:3]
+names(ov_hg19) <- names(hub_hg19)[1:3]
 lapply(ov_hg19, head, n=3)
 ```
 Annotating the mouse ranges in the same fashion is left 
-as an excercise.
+as an exercise.
 
 <h3 id="annotating-variants">Annotating Variants</h3>
 
