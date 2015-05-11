@@ -1,198 +1,245 @@
-<!--
-%\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{Annotation}
--->
+---
+output: html_document
+---
+
+Genomic Annotation Resources in Bioconductor
+========================================================
+
+Annotation resources make up a significant proportion of the Bioconductor project[1].  And there are also a diverse set of online resources available which are accessed using specific packages.  This walkthrough will describe the most popular of these resources and give some high level examples on how to use them.
 
 
+**Authors:** Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain, Martin Morgan
+
+**Key Words:** annotation, next-generation sequencing, R, Bioconductor
 
 
-![](/images/icons/help.gif)Using Bioconductor for Annotation
-============================================================
+Introduction
+========================================================
 
-Bioconductor has extensive facilities for mapping between microarray
-probe, gene, pathway, gene ontology, homology and other annotations. 
+Bioconductor annotation resources have traditionally been used near the end of an analysis. After the bulk of the data analysis, annotations would be used interpretatively to learn about the most significant results.  But increasingly, they are also used as a starting point or even as an intermediate step to help guide a study that is still in progress.  In addition to this, what it means for something to be an annotation is also becoming less clear than it once was.  It used to be clear that annotations were only those things that had been established after multiple different studies had been performed (such as the primary role of a gene product).  But today many large data sets are treated by communities in much the same way that classic annotations once were: as a reference for additional comparisons.
 
-Bioconductor has built-in representations of GO, KEGG, vendor, and
-other annotations, and can easily access NCBI, Biomart, UCSC, and
-other sources.
+Another change that is underway with annotations in Bioconductor is in the way that they are obtained.  In the past annotations existed almost exclusively as separate annotation packages[2,3,4].  Today packages are still an enormous source of annotations.  The current repository contains over eight hundred annotation packages (http://bioconductor.org/packages/release/BiocViews.html#___AnnotationData).  Here is a table that summarizes some of the more important classes of annotation objects that are often accessed using packages:
 
-* [Sample OrgDb Workflow](#sample-workflow-OrgDb)  
-* [Sample ChipDb Workflow](#sample-workflow-ChipDb)  
-* [Sample TxDb Workflow](#sample-workflow-TxDb)  
-* [Sample OrganismDb Workflow](#sample-workflow-OrganismDb)  
-* [Making an OrganismDb package](#Making-an-OrganismDb-package)  
-* [Making full use of keys](#full-use-of-keys)  
-* [Sample AnnotationHub Workflow](#sample-workflow-AnnotationHub)  
-* [Using biomaRt](#Using-biomaRt)
-* [BSgenome packages](#using-BSgenome)
-* [Installation and Use](#install-and-use)
-* [Exploring Package Content](#exploring-package-content)
-* [Annotation Resources](#annotation-resources)
+Object type  |example package name          |contents
+-------------|------------------------------|---------------------------
+OrgDb | org.Hs.eg.db | gene based information for Homo sapiens
+TxDb | TxDb.Hsapiens.UCSC.hg19.knownGene | transcriptome ranges for Homo sapiens
+OrganismDb | Homo.sapiens | composite information for Homo sapiens
+BSgenome | BSgenome.Hsapiens.UCSC.hg19 | genome sequence for Homo sapiens
 
+But in spite of the popularity of annotation packages, annotations are increasingly also being pulled down from web services like biomaRt[5,6,7] or from the AnnotationHub[8].  And both of these represent enormous resources for annotation data.
 
+In part because of the rapidly evolving landscape, it is currently impossible in a single document to cover every possible annotation or even every kind of annotation present in Bioconductor. So here we will instead go over the most popular annotation resources and describe them in a way intended to expose common patterns used for accessing them. The hope is that a user with this information will be able to make educated guesses about how to find and use additional resources that will inevitably be added later.  Topics that will be covered will include the following:
 
-<h2 id="package-type">Package Types</h2> Bioconductor contains many
-different types of annotation packages.  You can browse the currently
-available types here
-[here](http://www.bioconductor.org/packages/release/BiocViews.html#___PackageType)
-by simply using the bioconductor web site.
-
-On the web site you will see many different kinds of packages.  One of the largest categories are the many platform specific packages that contain annotation data about a particular microarray platform (ChipDb objects).  But there are also many org packages that contain gene centered data about an organism (OrgDb objects).   And there are even packages that contain genome centered data about an organisms transcriptome (TxDb objects) or genome (BSgenome objects).
-
-This document will demonstrate some of the more typical use cases for most of the more popular kinds of annotation packages (and their associated objects).  
-
-<img src="databaseTypes.png" width="50%">
-
-The above diagram shows some of the major classes of object types that are supported in this project and diagrams how they are typically related to each other.  Later we will also cover a class of meta annotation object that can wrap access to several different kinds of related annotation objects into a single container (OrganismDb objects).  
+* [Using the AnnotationHub](#AnnotationHub)  
+* [OrgDb Objects](#OrgDb)  
+* [TxDb Objects](#TxDb)  
+* [OrganismDb Objects](#OrganismDb)  
+* [BSgenome Objects](#BSgenome)
+* [Using the biomaRt web service](#biomaRt)
+* [Creating annotation objects](#creation)
 
 
-<h2 id="sample-workflow-OrgDb">Sample OrgDb Workflow</h2>
+<h2> Packages you will need installed to follow along </h2>
 
-The organism wide gene centered packages (OrgDb packages) each contain
-gene centered data for an organism.  These packages are the primary place for storing data that can be directly associated with genes.  Lets take a closer look at the organism package for human:
-```{r echo=FALSE}
-suppressPackageStartupMessages(library(org.Hs.eg.db))
+In this chapter we make use of several Bioconductor packages.  You can install them with by using biocLite() like this:
+
+```{r, eval=FALSE}
+source("http://bioconductor.org/biocLite.R")
+biocLite("AnnotationHub")
+biocLite("Homo.sapiens")
+biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
+biocLite("BSgenome.Hsapiens.UCSC.hg19")
+biocLite("biomaRt")
+biocLite("TxDb.Athaliana.BioMart.plantsmart22")
 ```
+
+The usage of the installed packages will be described in detail within the Usage section.
+
+
+How to Annotate
+========================================================
+
+
+<h2 id="AnnotationHub">Using the AnnotationHub</h2>
+
+The top of the list for learning about annotation resources is the relatively new AnnotationHub package[8]. The AnnotationHub was created to provide a convenient access point for end users to find a large range of different annotation objects for use with Bioconductor. Resources found in the AnnotationHub are easy to discover and are presented to the user as familiar Bioconductor data objects. Because it is a recent addition, the AnnotationHub allows access to a broad range of annotation like objects, some of which may not have been considered annotations even a few years ago.  To get started with the AnnotationHub users only need to load the package and then create a local AnnotationHub object like this:
+
+```{r, echo=FALSE}
+library("AnnotationHub")
+ah <- AnnotationHub()
+```
+
+```{r, eval=FALSE}
+library("AnnotationHub")
+ah <- AnnotationHub()
+```
+
+The very 1st time that you call the AnnotationHub, it will create a cache directory on your system and download the latest metadata for the hubs current contents.  From that time forward, whenever you download one of the hubs data objects, it will also cache those files in the local directory so that if you request the information again, you will be able to access it quickly.  
+
+The show method of an AnnotationHub object will tell you how many resources are currently accessible using that object as well as give a high level overview of the most common kinds of data present.
 
 ```{r}
-library(org.Hs.eg.db)
+ah
 ```
 
-Once loaded, each OrgDb object can be accessed using the following four methods:
+As you can see from the object above, there are a LOT of different resources available.  So normally when you get an AnnotationHub object the 1st thing you want to do is to filter it to remove unwanted resources.
 
-<h4>columns()</h4>
-
-To list the kinds of things that can be retrieved, use the columns method.
-```{r}
-columns(org.Hs.eg.db)
-```
-
-
-<h4>keytypes()</h4>
-
-To list the kinds of things that can be used as keys we can use the
-keytypes method
-```{r}
-keytypes(org.Hs.eg.db)
-```
-
-
-<h4>keys()</h4>
-
-
-And to extract viable keys of a particular kind (keytype), we can use the keys method.
-```{r}
-head(keys(org.Hs.eg.db, keytype="ENTREZID"))
-```
-
-Since the keys method can tell us specific things that can be used as keys, here we will use it to extract a few ids to use for demonstrating the fourth method type.
-```{r}
-ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
-```
-
-
-<h4>select()</h4>
-
-Once you have some ids that you want to look up data for, the select method allows you to map these ids as long as you use the columns argument to indicate what you need to know and the keytype argument to specify what kind of keys they are.
-```{r}
-select(org.Hs.eg.db, keys=ids, columns="SYMBOL", keytype="ENTREZID")
-```
-
-And since the columns argument can take a vector of valid columns, you can look up multiple things at once.
-```{r}
-select(org.Hs.eg.db, keys=ids, columns=c("GENENAME", "SYMBOL"), keytype="ENTREZID")
-```
-
-
-But where would we normally get the "ids" that we would pass in to the keys argument? Usually these kinds of ids come from the result of a data analysis.  Here I will load an experiment data package to provide us with an example data set to look at:
-
-
-<h4>An example with some data</h4>
+Fortunately, the AnnotationHub has several different kinds of metadata that you can use for searching and subsetting.  To see the different categories all you need to do is to type the name of your AnnotationHub object and then tab complete from the '$' operator.  And to see all possible contents of one of these categories you can pass that value in to unique like this:
 
 ```{r}
-library("parathyroidSE")
-data(exonicParts)
-exonicParts[1:3]
+unique(ah$dataprovider)
 ```
 
-Now having just loaded this data set, I can extract the ensembl gene IDs contained in this object like this:
-```{r}
-ids = unlist(mcols(exonicParts)$gene_id)
-head(ids)
-```
+One of the most valuable ways in which the data is labeled is according to the kind of R object that will be returned to you.
 
-From here I can look up gene symbols for these ids by using the select method like this.  Notice how I have to specify the correct (and different from before) keytype in order to extract these:
-```{r}
-res <- select(org.Hs.eg.db, keys=ids, columns="SYMBOL", keytype="ENSEMBL")
-head(res)
-```
-
-And if I am careful to make sure that there were not any many to one relationships changing the size of the result data.frame, then I can even put these gene symbols back into the initial object:
-```{r}
-dim(res)[1] == length(exonicParts)
-newMcols <- cbind(mcols(exonicParts), res[,2,drop=FALSE])
-mcols(exonicParts) <- newMcols
-exonicParts[1:3]
-```
-
-
-Of course we can look up many things other than just gene names and symbols.  For example, we could also extract the GO ids associated with the first id like this:
 
 ```{r}
-id = ids[1]
-res <- select(org.Hs.eg.db, keys=id, columns="GO", keytype="ENSEMBL")
-head(res)
+unique(ah$rdataclass)
 ```
 
-You may have noticed that the above request results in many rows for just one input id (and that a warning was issued about this).  Sometimes when you use select you may ask for columns that will result in select having to return multiple values for each key that you passed in.  This is caused by the structure of the underlying data.  This kind of data is sometimes said to have a many to one relationship because there are many things that can match to each key.  When this happens select() will return multiple rows for each key that you used as input because the return value for select is a data.frame object.  A warning is issued in this case because this behavior might not be what you were expecting.  If you request multiple many to one relationships at once, it will result in a multiplication of the returned rows as each row will represent a unique combination of the data that you asked for.  This is not recommended as you can very quickly generate a data.frame object that is both very large and simultaneously not very useful.  For best results, use select carefully, and avoid requesting more than one many to one value at any given time.
 
-When making use of GO ids, you can also use the GO.db package to find the Terms associated with those GO ids.  The GO.db package will load a GOdb object that can be used in a manner similar to what we just saw with our OrgDb object for org.Hs.eg.db.  And we can use the same four methods that we just learned about (columns, keytypes, keys and select), to extract whatever data we need.
+Once you have identified which sorts of metadata you would like to use to find your data of interest, you can then use the subset or query methods to reduce the size of the hub object to something more manageable.  For example you could select only those records where the string 'GRanges' was in the metadata.  As you can see GRanges are one of the more popular formats for data that comes from the AnnotationHub.
+
 
 ```{r}
-library("GO.db")
-head(res$GO)  ## shows what we are using as keys
-head(select(GO.db, keys=res$GO, columns="TERM", keytype="GOID"))
+grs <- query(ah, "GRanges")
+grs
 ```
 
-
-
-<h4>mapids()</h4>
-
-
-Sometimes you might want something 'simpler' than the select method.  This can happen if perhaps you are only interested in getting a character vector which quickly retrieves values that match a set of IDs.  For this sort of use case we also have added the mapIds accessor.  Lets suppose that you have some entrez gene ids and you just want to get the gene symbol for them.  You could do it like this:
+Or you can use subsetting to only select for matches on a specific field 
 
 ```{r}
-ids = head(keys(org.Hs.eg.db, keytype="ENTREZID"))
-mapIds(org.Hs.eg.db, keys=ids, column='SYMBOL', keytype='ENTREZID')
+grs <- ah[ah$rdataclass == "GRanges",]
 ```
 
-The main difference between select() and mapIds() is that mapIds expects that you want a simple named vector object as a return value where the id that you started with are the named of the value returned.  Because it is not returning a data.frame, mapIds has an extra argument (multiVals) to indicate how you would like to handle the case where multiple things match your keys.  By default, mapIds will just give you the 1st of the matching objects like so:
+The subset function is also provided.
 
 ```{r}
-mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID')
+orgs <- subset(ah, ah$rdataclass == "OrgDb")
+orgs
 ```
 
-But you can also ask it to return other kinds of vectors like a list, CharacterList etc.:
+And if you really need access to all the metadata you can extract it as a DataFrame using mcols() like so:
 
 ```{r}
-mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID', multiVals='CharacterList')
+meta <- mcols(ah)
 ```
 
-Or you can even define your own behavior and just pass in the function to multiVals:
+Also if you are a fan of GUI's you can use the display method to look at your data in a browser and return selected rows back as a smaller AnnotationHub object like this:
+
+```{r, eval=FALSE}
+sah <- display(ah)
+```
+
+Calling this method will produce a web based interface like the one pictured here:
+
+<img src="display.png" width="100%">
+
+
+
+Once you have the AnnotationHub object pared down to a reasonable size, and are sure about which records you want to retrieve, then you only need to use the '[[' operator to extract them.  Using the '[[' operator, you can extract by numeric index (1,2,3) or by AnnotationHub ID.  If you choose to use the former, you simply extract the element that you are interested in.  So for our chain example, you might just want to 1st one like this:
 
 ```{r}
-last <- function(x){x[[length(x)]]}
-mapIds(org.Hs.eg.db, keys=ids, column='ALIAS', keytype='ENTREZID', multiVals=last)
+res <- grs[[1]]
+head(res, n=3)
+```
+
+Or you might have decided that you want to see the data for the green spotted pufferfish by that you spotted in the orgs subset under the name 'AH13961'.  That data could also be extracted like this:
+
+```{r}
+rabbit <- orgs[["AH13960"]]
+rabbit
+```
+
+<h3>Exercises for AnnotationHub.</h3>
+
+Exercise 1: Use the AnnotationHub to extract UCSC data that is from Homo sapiens and also specifically from the hg19 genome. What happens to the hub object as you filter data at each step?
+
+Exercise 2 Now that you have basically narrowed things down to the
+hg19 annotations from UCSC genome browser, lets get one of these
+annotations.  Find the oreganno track and save it into a local
+variable.  
+
+
+<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+
+
+
+
+<h2 id="OrgDb">OrgDb objects</h2>
+
+At this point you might be wondering: What is this OrgDb object about?  OrgDb objects are one member of a family of annotation objects that all represent hidden data through a shared set of methods.  So if you look closely at the rabbit object in the example above you can see that it contains data for the European rabbit Oryctolagus cuniculus (taxonomy ID = 9986).  You can learn a little more about it by learning about the columns method.
+
+```{r}
+columns(rabbit)
+```
+
+The columns method gives you a vector of data types that can be retrieved from the object that you call it on.  So the above call indicates that there are several different data types that can be retrieved from the tetra object.
+
+A very similar method is the keytypes method, which will list all the data types that can also be used as keys.  
+
+```{r}
+keytypes(rabbit)
+```
+
+In many cases most of the things that are listed as columns will also come back from a keytypes call, but since these two things are not guaranteed to be identical, we maintain two separate methods.
+
+Now that you can see what kinds of things can be used as keys, you can call the keys method to extract out all the keys of a given key type.
+
+```{r}
+head(keys(rabbit, keytype="ENTREZID"))
 ```
 
 
+This is useful if you need to get all the IDs of a particular kind but the keys method has a few extra arguments that can make it even more flexible.  For example, using the keys method you could also extract the gene SYMBOLS that contain "COX" like this:
+
+```{r}
+keys(rabbit, keytype="SYMBOL", pattern="COX")
+```
+
+Or if you really needed an other keytype, you can use the column argument to extract the ENTREZ GENE IDs for those gene SYMBOLS that contain the string "COX":
+
+```{r}
+keys(rabbit, keytype="ENTREZID", pattern="COX", column="SYMBOL")
+```
+
+But often, you will really want to extract other data that matches a particular key or set of keys.  For that there are two methods which you can use.  The more powerful of these is probably select.  Here is how you would look up the gene SYMBOL, and REFSEQ id for the entrez gene IDs "808231" and "808233".
+
+```{r}
+select(rabbit, keys=c("808231","808233"), columns=c("SYMBOL","REFSEQ"),
+       keytype="ENTREZID")
+```
+
+When you call it, select will return a data.frame that attempts to fill in matching values for all the columns you requested.  However, if you ask select for things that have a many to one relationship to your keys it can result in an expansion of the data object that is returned.  For example, watch what happens when we ask for the GO terms for the same entrez gene ID:
+
+```{r}
+select(rabbit, keys="808233", columns="GO", keytype="ENTREZID")
+```
+
+Because there are about 9 GO terms associated with the gene "808233", you end up with 9 rows in the data.frame...  This can become problematic if you then ask for several columns that have a many to one relationship to the original key. If you were to do that, not only would the result multiply in size, it would also become really hard to use.  A better strategy is to be selective when using select.
+
+Sometimes you might want to look up matching results in a way that is simpler than the data.frame object that select returns.  This is especially true when you only want to look up one kind of value per key.  For these cases, we recommend that you look at the mapIds method.  Lets look at what happens if request the same basic information as in our recent select call, but instead using the mapIds method:
+
+```{r}
+mapIds(rabbit, keys=c("808231","808233"), column="GO", keytype="ENTREZID")
+```
+
+As you can see, the mapIds method allows you to simplify the result that is returned.  And by default, mapIds only returns the 1st matching element for each key.  But what if you really need all those GO terms returned when you call mapIds?  Well then you can make use of the mapIds multiVals argument.  There are several options for this argument, we have already seen how by default you can return only the 'first' element.  But you can also return a 'list' or 'CharacterList' object, or you can 'filter' out or return 'asNA' any keys that have multiple matches.  You can even define your own rule (as a function) and pass that in as an argument to multiVals.  Lets look at what happens when you return a list:
+
+```{r}
+mapIds(rabbit, keys=c("808231","808233"), column="GO", 
+       keytype="ENTREZID", multiVals="list")
+```
+
+Now you know how to extract information from an OrgDb object, you might find it helpful to know that there is a whole family of other AnnotationDb derived objects that you can also use with these same five methods (keytypes(), columns(), keys(), select(), and mapIds()).  For example there are ChipDb objects, InparanoidDb objects and TxDb objects which contain data about microarray probes, inparanoid homology partners or transcript range information respectively.  And there are also more specialized objects like GODb or ReactomeDb objects which offer access to data from GO and reactome.  In the next section, we will be looking at one of the more popular classes of these objects: the TxDb object.
 
 
 <h3>Exercises for OrgDb objects.</h3>
 
-Exercise 1: Look at the help page for the different columns and keytypes values with: help("SYMBOL").  Now use this information and what we just described to look up the entrez gene and chromosome for the gene symbol "MSX2".
+Exercise 3: Look at the help page for the different columns and keytypes values with: help("SYMBOL").  Now use this information and what we just described to look up the entrez gene and chromosome for the gene symbol "MSX2".
 
-Exercise 2: In the previous exercise we had to use gene symbols as
+Exercise 4: In the previous exercise we had to use gene symbols as
 keys.  But in the past this kind of behavior has sometimes been
 inadvisable because some gene symbols are used as the official symbol
 for more than one gene.  To learn if this is still happening take
@@ -205,455 +252,199 @@ from the org.Hs.eg.db package. Then check the symbols for redundancy.
 
 
 
+<h2 id="TxDb">TxDb Objects</h2>
 
-<h2 id="sample-workflow-ChipDb">Sample ChipDb Workflow</h2>
+As mentioned before, TxDb objects can be accessed using the standard set of methods: keytypes(), columns(), keys(), select(), and mapIds().  But because these objects contain information about a transcriptome, they are often used to compare range based information to these important features of the genome[3,4].  As a result they also have specialized accessors for extracting out ranges that correspond to important transcriptome characteristics.
 
-The following illustrates a typical R / Bioconductor
-session for a ChipDb package. It continues the
-[differential expression](/help/workflows/oligo-arrays/) workflow,
-taking a 'top table' of differentially expressed probesets and
-discovering the genes probed, and the Gene Ontology pathways to which
-they belong.
-
-```{r echo=FALSE}
-suppressPackageStartupMessages(library(hgu95av2.db))
-```
-
-First lets consider some typical probe Ids.  If you have done a
-microarray analysis before you have probably already run into IDs like
-this.  They are typically manufacturer assigned and normally only
-relevant to a small number of chips.  Below I am just going to
-demonstrate on 6 probe Ids from the u133 2.0 affymetrix platform.
-```{r}
-## Affymetrix U133 2.0 array IDs of interest; these might be
-## obtained from
-##
-##   tbl <- topTable(efit, coef=2)
-##   ids <- tbl[["ID"]]
-##
-## as part of a more extensive workflow.
-ids <- c("39730_at", "1635_at", "1674_at", "40504_at", "40202_at")
-```
-
-Load libraries as sources of annotation
+Lets start by loading a TxDb object from an annotation package based on the UCSC ensembl genes track for Drosophila.  A common practice when loading these is to shorten the long name to 'txdb' (just as a convenience).  
 
 ```{r}
-library("hgu95av2.db")
+library("TxDb.Hsapiens.UCSC.hg19.knownGene")
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb
 ```
 
-
-And from here you can use the new ChipDb object in the same way that you learned to use an OrgDb object before.  The only real change is that the ChipDb object will also have data about how platform specific probes match to specific genes.  So for example:
-
+Just by looking at the TxDb object, we can learn a lot about what data it contains including where the data came from, which build of the UCSC genome it was based on and the last time that the object was updated.  One of the most common uses for a TxDb object is to extract various kinds of transcript data out of it.  So for example you can extract all the transcripts out of the TxDb as a GRanges object like this:
 
 ```{r}
-columns(hgu95av2.db)
-keytypes(hgu95av2.db)
-columns <- c("PFAM","SYMBOL")
-select(hgu95av2.db, keys=ids, columns, keytype="PROBEID")
+txs <- transcripts(txdb)
+txs
 ```
 
-
-<h3>Exercises for ChipDb objects.</h3>
-
-Exercise 3: Examine the gene symbols for both the hgu95av2.db and the
-org.Hs.eg.db packages.  Which one has more gene symbols?  Which one
-has more gene symbols that can be mapped to an entrez gene ID?  Which
-object seems to contain more information?
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
-
-
-
-<h2 id="sample-workflow-TxDb">Sample TxDb Workflow</h2>
-
-The genome centered TxDb packages support the same interface
-as that ChipDb and the OrgDb packages.
-
-```{r echo=FALSE}
-suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
-```
+Similarly, there are also extractors for exons(), cds(), genes() and promoters().  Which kind of feature you choose to extract just depends on what information you are after.  These basic extractors are fine if you only want a flat representation of these data, but many of these features are inherently nested. So instead of extracting a flat GRanges object, you might choose instead to extract a GRangesList object that groups the transcripts by the genes that they are associated with like this:
 
 ```{r}
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene ## done for convenience
-keys <- head(keys(txdb, keytype="GENEID"), n=2)
-columns <- c("TXNAME", "TXSTART","TXSTRAND")
-select(txdb, keys, columns, keytype="GENEID")
+txby <- transcriptsBy(txdb, by="gene")
+txby
 ```
 
-But in addition to supporting the standard set of methods (select,
-keytypes, keys and columns).  The TxDb objects also support
-methods to retrieve the annotations as ranges.  These accessors break
-down into two basic categories.  The most basic will return
-annotations as GRanges objects.  Some examples of these are:
-transcripts(), exons() and cds().
 
-This for example will return all the transcripts as ranges:
+Just as with the flat extractors, there is a whole family of extractors available depending on what you want to extract and how you want it grouped.  They include transcriptsBy(), exonsBy(), cdsBy(), intronsByTranscript(), fiveUTRsByTranscript() and threeUTRsByTranscript().
+
+When dealing with genomic data it is almost inevitable that you will run into problems with the way that different groups have adopted alternate ways of naming chromosomes.  This is because almost every major repository has cooked up their own slightly different way of labeling these important features.
+
+To cope with this, the Seqinfo object was invented and is attached to TxDb objects as well as the GenomicRanges extracted from these objects.  You can extract it using the seqinfo() method like this:
 
 ```{r}
-transcripts(txdb)
+si <- seqinfo(txdb)
+si
 ```
 
-And this will return all the exons as ranges:
-```{r}
-exons(txdb)
-```
-
-But these operations will also support the extraction of extra
-metadata.  All extra data will be inserted into the metadata slot of
-the returned GRanges object.  So for example you could spice up your
-call to transcripts by using the columns argument like this.
+And since the seqinfo information is also attached to the GRanges objects produced by the TxDb extractors, you can also call seqinfo on the results of those methods like this:
 
 ```{r}
-transcripts(txdb, columns = c("tx_id","tx_name","gene_id"))
+txby <- transcriptsBy(txdb, by="gene")
+si <- seqinfo(txby)
 ```
 
-
-The 2nd kind of range accessor supported by TxDb objects are
-the ones that return GRangesList objects.  Some examples of these are:
-transcriptsBy(), exonsBy() or cdsBy().  These accessors just allow you
-to return a GRangesList object that contains the desired ranges by
-split up by some important feature type that is specified using the
-"by" argument.  A typical case is to extract all the transcript ranges
-known for all the genes.  You can do that like this:
+The Seqinfo object contains a lot of valuable data about which chromosome features are present, whether they are circular or linear, and how long each one is.  It is also something that will be checked against if you try to do an operation like 'findOverlaps' to compute overlapping ranges etc.  So it's a valuable way to make sure that the chromosomes and genome are the same for your annotations as the range that you are comparing them to.  But sometimes you may have a situation where your annotation object contains data that is comparable to your data object, but where it is simply named with a different naming style.  For those cases, there are helpers that you can use to discover what the current name style is for an object.  And there is also a setter method to allow you to change the value to something more appropriate.  So in the following example, we are going to change the seqlevelStyle from 'UCSC' to 'ensembl' based naming convention (and then back again).
 
 ```{r}
-transcriptsBy(txdb, by="gene")
+head(seqlevels(txdb))
+seqlevelsStyle(txdb)
+seqlevelsStyle(txdb) <- "ensembl"
+head(seqlevels(txdb))
+
+## then change it back
+seqlevelsStyle(txdb) <- "UCSC"
+head(seqlevels(txdb))
 ```
 
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+In addition to being able to change the naming style used for an object with seqinfo data, you can also toggle which of the chromosomes are 'active' so that the software will ignore certain chromosomes.  By default, all of the chromosomes are set to be 'active'.  
 
+```{r}
+head(isActiveSeq(txdb), n=30)
+```
+
+But sometimes you might wish to ignore some of them.  For example, lets suppose that you wanted to ignore the Y chromosome from our txdb.  You could do that like so:
+
+```{r}
+isActiveSeq(txdb)["chrY"] <- FALSE
+head(isActiveSeq(txdb), n=26)
+```
 
 
 <h3>Exercises for TxDb objects.</h3>
 
-Exercise 4: Use the accessors for the
+Exercise 5: Use the accessors for the
 TxDb.Hsapiens.UCSC.hg19.knownGene package to retrieve the gene id,
 transcript name and transcript chromosome for all the transcripts.  Do
 this using both the select() method and also using the transcripts()
 method.   What is the difference in the output?
 
 
-Exercise 5: Load the TxDb.Athaliana.BioMart.plantsmart22 package. This
+Exercise 6: Load the TxDb.Athaliana.BioMart.plantsmart22 package. This
 package is not from UCSC and it is based on plantsmart.  Now use
 select or one of the range based accessors to look at the gene ids
-from this TxDb object.  How tdo they compare to what you saw
+from this TxDb object.  How do they compare to what you saw
 in the TxDb.Hsapiens.UCSC.hg19.knownGene package?
-
-
-
-
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
 
 
-<h2 id="sample-workflow-OrganismDb">Sample OrganismDb Workflow</h2>
+<h2 id="OrganismDb">OrganismDb Objects</h2>
 
-What if you wanted to combine all the good stuff from the GO.db
-package with what you find in the appropriate TxDb and OrgDb
-packages for an organism?  Then you would want to use an OrganismDb
-package.  An example of an OrganismDb package is the Homo.sapiens
-package.  Like the OrgDb, ChipDb and TxDb packages, it
-supports the use of select, keytypes, keys and columns.  
+So what happens if you have data from multiple different Annotation objects.  For example, what if you had gene SYMBOLS (found in an OrgDb object) and you wanted to easily match those up with known gene transcript names from a UCSC based TxDb object?  There is an ideal tool that can help with this kind of problem and it's called an OrganismDb object[9].  On the one hand OrganismDb objects can seem more complex than OrgDb, GODb or TxDb objects because they can allow you to access all three object sources at once.  But in reality they are not that complicated.  What they do is just query each of these resources for you  and then merge the results back together in way that lets you pretend that you only have one source for all your annotations.
 
-```{r echo=FALSE}
-suppressPackageStartupMessages(library(Homo.sapiens))
-```
+To try one out lets load one that was made as an annotation package:
 
 ```{r}
-library(Homo.sapiens)
-keys <- head(keys(Homo.sapiens, keytype="ENTREZID"), n=2)
-columns <- c("SYMBOL","TXNAME")
-select(Homo.sapiens, keys, columns, keytype="ENTREZID")
+library("Homo.sapiens")
+Homo.sapiens
 ```
 
-When an OrganismDb package knows about a relevant TxDb
-package, it can also support the ranged accessors introduced with the
-TxDb objects.
+And that's it.  You can now use these objects in the same way that you use OrgDb or TxDb objects.  It works the same as the base objects that it contains:
 
 ```{r}
-transcripts(Homo.sapiens, columns=c("TXNAME","SYMBOL"))
+select(Homo.sapiens, keys="4488", columns=c("SYMBOL","TXNAME"), keytype="ENTREZID")
 ```
 
+In fact the five methods that worked for all of the other Db objects that we have discussed (keytypes(), columns(), keys(), select(), and mapIds()) should all work for OrganismDb objects.  And if the OrganismDb object was composed to include a TxDb, then the range based accessors should also work:
 
-<h2 id="Making-an-OrganismDb-package">Making an OrganismDb package</h2>
-
-You might be surprised to learn that an OrganismDb package does not
-itself contain very much information.  Instead, it "knows where to
-find it", but referencing other packages that themselves implement a
-select interface.  So to create an OrganismDb package, you really only
-need to specify where the information needs to come from.  Configuring
-an OrganismDb object is therefore pretty simple. You simply create a
-special list object that describes which IDs from each package are the
-same kind of IDs in other packages to be included, along with the
-relevant package names.  So in the following example, the "GOID"
-values from the GO.db package act as foreign keys for the "GO" values
-in the org.Hs.eg.db package and so on.
-
-
-```{r eval=FALSE}
-gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
-      	   join2 = c(org.Hs.eg.db="ENTREZID",
-           TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
-
-makeOrganismPackage(pkgname = "Homo.sapiens",
-	            graphData = gd,
-		    organism = "Homo sapiens",
-		    version = "1.0.0",
-		    maintainer = "Package Maintainer<maintainer@somewhere.org>",
-		    author = "Some Body",
-		    destDir = ".",
-		    license = "Artistic-2.0")
+```{r}
+txs <- transcripts(Homo.sapiens, columns=c("TXNAME","SYMBOL"))
+txs
 ```
 
-In this way, you can create a custom OrganismDb package for any
-organism of interest, providing that you have also have access to the
-supporting packages.  There is a vignette that covers this topic in
-more detail
-[here](http://www.bioconductor.org/packages/release/bioc/vignettes/OrganismDbi/inst/doc/OrganismDbi.pdf).
-
+But one key difference between the range accessors for a TxDb object when compared to an OrganismDb object is that the number of things that can be requested via columns is much greater for the compound object...
 
 
 <h3>Exercises for OrganismDb objects.</h3>
 
-Exercise 6: Use the Homo.sapiens object to look up the gene symbol,
+Exercise 7: Use the Homo.sapiens object to look up the gene symbol,
 transcript start and chromosome using select().  Then do the same
 thing using transcripts.  You might expect that this call to
 transcripts will look the same as it did for the TxDb object,
 but (temporarily) it will not.
 
-Exercise 7: Look at the results from call the columns method on the
+Exercise 8: Look at the results from call the columns method on the
 Homo.sapiens object and compare that to what happens when you call
 columns on the org.Hs.eg.db object and then look at a call to columns on the
 TxDb.Hsapiens.UCSC.hg19.knownGene object. What is the difference
 between TXSTART and CHRLOC?  Which one do you think you should use for
 transcripts or other genomic information?
 
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-
-
-
-<h2 id="full-use-of-keys">Making full use of keys</h2>
-Lets look more closely at the keys method.  We have already talked
-about how you can use it to do this:
-
-```{r}
-library(Homo.sapiens)
-keys <- head(keys(Homo.sapiens, keytype="ENTREZID"), n=2)
-```
-
-And then you can use it with select to look up other kinds of
-information.  But what if you only know partial information about the
-keys you are looking up?  In Bioconductor 2.13 and higher there are
-extra arguments for the keys method that you can make use of to find
-keys that match certain criteria.  The most useful is probably the
-pattern argument.  The pattern argument allows you to find out which
-keys match a certain pattern.  So for example, you can look up entrez
-gene IDs that start with a "2" like this:
-
-```{r}
-head(keys(Homo.sapiens, keytype="ENTREZID", pattern="^2"), n=6)
-```
-Or you could look up gene symbols that start with "MS":
-
-```{r}
-head(keys(Homo.sapiens, keytype="SYMBOL", pattern="^MS"), n=6)
-```
-If your string matching is too specific, you could also try to use
-fuzzy matching by setting the fuzzy argument to TRUE:
-
-```{r}
-head(keys(Homo.sapiens, keytype="SYMBOL", pattern="^MS", fuzzy=TRUE), n=6)
-```
- And if you want to match one one key and actually return another, then you can use the column argument to indicate which key you want to search for pattern on while using the keytype to indicate which kind of key you want returned.  So you could (for example) get back ensembl IDs where the symbol starts with "MS".
-
-```{r}
-keys <- head(keys(Homo.sapiens, keytype="ENSEMBL", pattern="^MS", column="SYMBOL"), n=6)
-keys
-select(Homo.sapiens, keys, "SYMBOL", keytype="ENSEMBL")
-```
-
-
-<h3>Exercises for OrganismDb objects.</h3>
-Exercise 8: Use the Homo.sapiens object with the keys method to look
+Exercise 9: Use the Homo.sapiens object with the keys method to look
 up the entrez gene IDs for all gene symbols that contain the letter
 "X". 
 
-
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
 
 
+<h2 id="BSgenome">BSgenome Objects</h2>
 
-<h2 id="sample-workflow-AnnotationHub">Sample AnnotationHub Workflow</h2>
-
-So far we have been discussing annotations that are fairly well
-established and that represent consensus findings from the scientific
-community.  These kinds of annotations are usually curated at large
-governmental institutions like NCBI or ensembl and for the most part
-everyone basically agrees about what they mean and how to use them.
-
-But sometimes the annotations that you need are not as well
-established.  Sometimes (for example) we just need to compare our
-results to the data from a recent large study such as the encode
-project.  The AnnotationHub package is designed to be useful for
-getting access to data like this.  AnnotationHub allows you to get
-access to data from a range of different data reposotories, with the
-caveat that the data objects in AnnotationHub have all been
-pre-processed into appropriate R objects for you.
-
-To make use of AnnotationHub, you need to load the package and then
-create an AnnotationHub object.  Notice that unlike the other
-packages, with AnnotationHub, you have to create an AnnotationHub
-object when you 1st start up your R session.
-
-```{r, eval=FALSE}
-library(AnnotationHub)
-
-ah <- AnnotationHub()
-```
-
-```{r, echo=FALSE}
-library(AnnotationHub)
-suppressMessages(ah <- AnnotationHub())
-```
-
-
-You can think of the AnnotationHub object as being a little bit like a list.  So you can see how many records are present by looking at the length like this:
+Another important annotation resource type is a BSgenome package[10].  There are many BSgenome packages in the repository for you to choose from.  And you can learn which organisms are already supported by using the available.genomes() function.
 
 ```{r}
-length(ah)
+library("BSgenome")
+head(available.genomes())
 ```
 
-And the show method for the AnnotationHub will also try to tell you about what it contains.  It will preferentially show you the most common kinds of data inside of it, so these values will change as you carve away things that you are uninterested in.
+Unlike the other resources that we have discussed here, these packages are meant to contain sequence data for a specific genome build of an organism.  You can load one of these packages in the usual way. And each of them normally has an alias for the primary object that is shorter than the full package name (as a convenience):
 
 ```{r}
-ah
+library("BSgenome.Hsapiens.UCSC.hg19")
+ls(2)
+Hsapiens
 ```
 
-
-The AnnotationHub resource currently has a LOT of different data in it.  So to really make use of that, you need to be able to find the data that is of specific interest to you.  To get started, you can just use the '$' operator and then just tab complete like this.
-
-```{r,eval=FALSE}
-ah$
-```
-
-And if you hit tab, that should give an output like this:
-```{}
-ah$ah_id         ah$dataprovider  ah$taxonomyid    ah$description   ah$rdataclass    ah$sourcetype
-ah$title         ah$species       ah$genome        ah$tags          ah$sourceurl     
-```
-
-Each of the above contains a column of metadata values that can be used to filter the AnnotationHub data.  You can look at the possible contents of any specific one by using unique.
+The getSeq method is a useful way of extracting data from these packages. This method takes several arguments but the important ones are the 1st two.  The 1st argument specifies the BSgenome object to use and the second argument (names) specifies what data you want back out.  So for example, if you call it and give a character vector that names the seqnames for the object then you will get the sequences from those chromosomes as a DNAStringSet object.
 
 ```{r}
-unique(ah$sourcetype)
+seqNms <- seqnames(Hsapiens)
+head(seqNms)
+getSeq(Hsapiens, seqNms[1:2])
 ```
 
-So from this you can make decisions about how you want to subset out the parts of the AnnotationHub that you want to explore in more detail.  Lets suppose that you are interested in data that was initially a 'BED' file.  You have already seen above that those would be the resources where the sourcetype is 'BED'.  So you can use the subset method to throw away all the other kinds of data.
+Whereas if you give the a GRanges object for the 2nd argument, you can instead get a DNAStringSet that corresponds to those ranges.  This can be a powerful way to learn what sequence was present from a particular range.  For example, here we can extract the range of a specific gene of interest like this.
 
 ```{r}
-ahs <- subset(ah, ah$sourcetype=='BED')
-length(ahs)
-```
-
-So now we have gone from almost 20 thousand entries to about 7500.  That helps, but we probably need to look closer than that.  So lets look again but this time lets look at the dataprovider information:
-
-```{r}
-table(ahs$dataprovider)
-```
-
-From here lets say you are interested in the EncodeDCC data.  You can get it like before:
-
-```{r}
-ahs2 <- subset(ahs, ah$dataprovider=='EncodeDCC')
-ahs2
-```
-
-And you can also use the powerful query function to subset based on matching a string in the metadata.  So lets further simplify to only those records where the  data is a 'gappedPeak'.
-
-```{r}
-ahs3 <- query(ahs2, 'gappedPeak')
-ahs3
-```
-
-From here you can hopefully see what you need.  So the only thing remaining to do is to retrieve your record.  Doing so works just like subsetting on a list like object.  So you can either retrieve it by position:
-
-```{r}
-res <- ahs3[[2]]
-```
-
-Or by name:
-
-```{r}
-res <- ahs3[["AH15223"]]
+txby <- transcriptsBy(txdb, by="gene")
+geneOfInterest <- txby[["4488"]]
+res <- getSeq(Hsapiens, geneOfInterest)
 res
 ```
 
-And if you just want to explore the metadata entirely in R as a DataFrame, then you can also get all of the relevant metadata from the object with the mcols method like this:
+Additionally, the Biostrings[11] package has many useful functions for finding a pattern in a string set etc.  You may not have noticed when it happened, but the Biostrings package was loaded when you loaded the BSgenome object, so these functions will already be available for you to explore.
 
-```{r}
-meta <- mcols(ah)
-```
+<h3>Exercises for BSgenome objects.</h3>
 
-
-We can also view  and filter our AnnotationHub object interactively 
-by simply calling the display function on it
-
-
-```{r eval=FALSE}
-d <- display(ah)
-```
-
-We can then  filter the AnnotationHub 
-object for "Homo sapiens" by either using the Global search field 
-on the top right corner of the page or the in-column search field for 
-"Species".
-
-
-<img src="display.png" width="50%">
-
-
-By default 1000 entries are displayed per page, we can change this using
-the filter on the top of the page or navigate through different pages
-using the page scrolling feature at the bottom of the page.
-
-
-We can also select the rows of interest to us and send them back to 
-the R session using 'Send Rows' button ; 
-this sets a filter internally which filters the 
-AnnotationHub object.
-
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-<h3>Exercises for AnnotationHub.</h3>
-
-Exercise 9: Use the AnnotationHub to extract UCSC data that is from Homo sapiens and also specifically from the hg19 genome. What happens to the hub object as you filter data at each step?
-
-Exercise 10 Now that you have basically narrowed things down to the
-hg19 annotations from UCSC genome browser, lets get one of these
-annotations.  Find the oreganno track and save it into a local
-variable.  
-
+Exercise 10: Use what you have just learned to extract the sequence for the PTEN gene.
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="Using-biomaRt">Using biomaRt</h2>
 
-Another valuable resource is the biomaRt package.  The biomaRt package
-exposes a huge family of online annotation resources called marts.
-Here is a brief run down of how to use it.  For the first step, load
-the package and decide which "mart" you want to use, then use the
-useMart() method to create a mart object
+
+
+
+<h2 id="biomaRt">biomaRt</h2>
+
+Another great annotation resource is the biomaRt package[5,6,7].  The biomaRt package exposes a huge family of different online annotation resources called marts.  Each mart is another of a set of online web resources that are following a convention that allows them to work with this package. So the first step in using biomaRt is always to load the package and then decide which "mart" you want to use. Once you have made your decision, you will then  use the useMart() method to create a mart object in your R session.  Here we are looking at the marts available and then choosing to use one of the most popular marts: the "ensembl"" mart.
 
 ```{r}
 library("biomaRt")
@@ -662,9 +453,7 @@ ensembl <- useMart("ensembl")
 ensembl
 ```
 
-Next you need to decide on a dataset.  This can also be specified in
-the mart object that is created when you call the the useMart()
-method.
+Each 'mart' can contain datasets for multiple different things. So the next step is that you need to decide on a dataset.  Once you have chosen one, you will need to specify that dataset using the dataset argument when you call the useMart() constructor method. Here we will point to the dataset for humans.
 
 ```{r}
 head(listDatasets(ensembl))
@@ -672,51 +461,42 @@ ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
 ensembl
 ```
 
-Next we need to think about filters and values. In the biomaRt
-package, filters are things that can be used with values to restrict
-or choose what comes back.  So you might choose a filter of
-"affy_hg_u133_plus_2" to go with specific values.  For example you
-might choose c("202763_at","209310_s_at","207500_at") to go with the
-filter "affy_hg_u133_plus_2".  Together these two things would request
-things that matched those probeset IDs on the platform listed as the
-filter.  There is an accessor for the kinds of filters that are
-available from a given mart/dataset:
+Next we need to think about attributes, values and filters. Lets start with attributes.  You can get a listing of the different kinds of attributes from biomaRt buy using the listAttributes method:
 
+```{r}
+head(listAttributes(ensembl))
+```
+
+And you can see what the values for a particular attribute are by using the getBM method:
+
+```{r}
+head(getBM(attributes="chromosome_name", mart=ensembl))
+```
+
+Attributes are the things that you can have returned from biomaRt.  They are analogous to what you get when you use the columns method with other objects.
+
+In the biomaRt package, filters are things that can be used with values to restrict or choose what comes back. The 'values' here are treated as keys that you are passing in and which you would like to know more information about.  In contrast, the filter represents the kind of key that you are searching for. So for example, you might choose a filter name of "chromosome_name" to go with specific value of "1".  Together these two argument values would request whatever attributes matched things on the 1st chromosome.  And just as there here is an accessor for attributes, there is also an accessor for filters:
 
 ```{r}
 head(listFilters(ensembl))
 ```
 
 
-Also, you need to know about attributes.  Attributes here mean the things that you want returned.  So if you want to know the gene symbol or something like that.  You would list that as an attribute.  There are accessors to list the kinds of attributes you can look up too:
-
-
-```{r}
-head(listAttributes(ensembl))
-```
-
-Once you are done exploring and know what you want to extract, you can call the getBM method to get your data like this:
-
+So now you know about attributes, values and filters, you can call the getBM method to put it all together and request specific data from the mart.  So for example, the following requests gene symbols and entrez gene IDs that are found on chromosome 1 of flies:
 
 ```{r}
-affyids=c("202763_at","209310_s_at","207500_at")
-getBM(attributes=c('affy_hg_u133_plus_2', 'entrezgene'), 
-                    filters = 'affy_hg_u133_plus_2', 
-                    values = affyids, mart = ensembl)
+res <- getBM(attributes=c("hgnc_symbol", "entrezgene"), 
+                    filters = "chromosome_name", 
+                    values = "1", mart = ensembl)
+head(res)
 ```
 
-Now what would you do if you didn't know what the possible values are
-for a given filter?  Well you could just request all the possible
-values by not specifying the filter, and instead only specifying it as
-an attribute like this:
+Of course you may have noticed that a lot of the arguments for getBM are very similar to what you do when you call shsapienselect.  So if it's your preference you can now also use the standard select methods with mart objects.
 
 ```{r}
-head(getBM(attributes='affy_hg_u133_plus_2', mart = ensembl))
+head(columns(ensembl))
 ```
 
-Of course if you find the standard biomaRt methods difficult to work with, you can now also use the standard select methods here.  
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
 <h3>Exercises for biomaRt.</h3>
@@ -730,238 +510,136 @@ GO terms from the org.Hs.eg.db package (which you can now retrieve
 using select()). What differences do you notice? Why do you suspect
 that is?
 
-
-
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
 
-<h2 id="using-BSgenome">BSgenome packages</h2>
 
-There are many BSgenome packages in the repository too.  These packages contain sequence data for sequenced organisms.  You can load one of these packages just like this:
+
+<h2 id="creation">Creating annotation objects</h2>
+
+By now you are aware that Bioconductor has a lot of annotation resources.  But it is still completely impossible to have every annotation resource pre-packaged for every conceivable use.  Because of this, almost all annotation objects have special functions that can be called to create those objects (or the packages that load them) from generalized data resources or specific file types.  Below is a table with a few of the more popular options.
+
+If you want this | And you have this | Then you could call this to help
+------------------ | ------------------------- | ------------------------------
+TxDb            |  tracks from UCSC    |  GenomicFeatures::makeTxDbPackageFromUCSC  
+TxDb            |  data from biomaRt   |  GenomicFeatures::makeTxDbPackageFromBiomaRt  
+TxDb            |  gff or gtf file     |  GenomicFeatures::makeTxDbFromGFF  
+OrgDb     |  custom data.frames         |  AnnotationForge::makeOrgPackage 
+OrgDb     |  valid Taxonomy ID   |  AnnotationForge::makeOrgPackageFromNCBI 
+ChipDb    |  org package & data.frame |  AnnotationForge::makeChipPackage
+BSgenome  |  fasta or twobit sequence files  | BSgenome::forgeBSgenomeDataPkg
+
+
+In most cases the output for resource creation functions will be an annotation package that you can install.  
+
+And there is unfortunately not enough space to demonstrate how to call each of these functions here.  But to do so is actually pretty straightforward and most such functions will be well documented with their associated manual pages and vignettes[3,4,10,12]. As usual, you can see the help page for any function right inside of R.
+
+```{r,eval=FALSE}
+help("makeTxDbPackageFromUCSC")
+```
+
+If you plan to make use of these kinds of functions then you should expect to consult the associated documentation first. These kinds of functions tend to have a lot of arguments and most of them also require that their input data meet some fairly specific criteria.  Finally, you should know that even after you have succeeded at creating an annotation package, you will also have to make use of the install.packages() function (with the repos argument=NULL) to install whatever package source directory has just been created.  
+
+
+
+
+Important considerations
+========================================================
+
+The bioconductor project represents a very large and active codebase from an active and engaged community. Because of this, you should expect that the software described in this walkthrough will change over time and often in dramatic ways.  As an example, the getSeq function that is described in this chapter is expected to a big overhaul in the coming months.  When this happens the older function will be deprecated for a full release cycle (6 months) and then labeled as defunct for another release cycle before it is removed. This cycle is in place so that active users can be warned about what is happening and where they should look for the appropriate replacement functionality. But obviously, this system cannot warn end users if they have not been vigilant about updating their software to the latest version. So please take the time to always update your software to the latest version.
+
+In order to stay abreast of new developments users are also encouraged to explore the bioconductor website which contains many current walkthroughs and vignettes (http://bioconductor.org/), and also to ask questions on the forums (https://support.bioconductor.org/). 
+
+
+
+Acknowledgments
+========================================================
+
+Research reported in this chapter was supported by the National Human Genome Research Institute of the National Institutes of Health under Award Number U41HG004059 and by the National Cancer Institute of the National Institutes of Health under Award Number U24CA180996. We also want to thank the numerous institutions who produced and maintained the data that is used for generating and updating the annotation resources described here.
+
+
+
+<h2 id="sessionInfo">SessionInfo</h2>
 
 ```{r}
-library(BSgenome.Hsapiens.UCSC.hg19)
-ls(2)
-Hsapiens
+sessionInfo()
 ```
 
-The getSeq method is useful for extracting data from these pacakges. This method takes several arguments but the important ones are the 1st two.  The 1st argument specifies the BSgenome object to use and the second argument (names) specifies what data you want back out.  So for example, if you call it and give a character vector that names the seqnames for the object then you will get the sequences from those chromosomes as a DNAStringSet object.
 
-```{r}
-seqNms <- seqnames(Hsapiens)
-head(seqNms)
-getSeq(Hsapiens, seqNms[1:2])
-```
+References
+========================================================
 
-Whereas if you give the a GRanges object for the 2nd argument, you can instead get a DNA StringSet that corresponds to those ranges.
+1. Wolfgang Huber, Vincent J Carey, Robert Gentleman, Simon Anders, Marc Carlson, Benilton S Carvalho, Hector Corrada Bravo, Sean Davis,	Laurent Gatto, Thomas Girke, Raphael Gottardo, Florian Hahne, Kasper D Hansen, Rafael A Irizarry, Michael Lawrence, Michael I Love, James MacDonald, Valerie Obenchain, Andrzej K Oleś, Hervé Pagès, Alejandro Reyes, Paul Shannon, Gordon K Smyth, Dan Tenenbaum, Levi Waldron & Martin Morgan	(2015) Orchestrating high-throughput genomic analysis with Bioconductor Nature Methods 12:115–121
 
-```{r}
-rngs <- GRanges(seqnames = c('chr1', 'chr4'), strand=c('+','-'),
-                ranges = IRanges(start=c(100000,300000), 
-                                 end=c(100023,300037)))
-rngs
-res <- getSeq(Hsapiens, rngs)
-res
-```
+2. Pages H, Carlson M, Falcon S and Li N. AnnotationDbi: Annotation Database Interface. R package version 1.30.0. 
 
-This can be a very powerful way to quickly get sequences of interest.  And for more useful tools the BSgenome package also has useful functions for finding a pattern in a string set etc.
+3. M. Carlson, H. Pages, P. Aboyoun, S. Falcon, M. Morgan, D. Sarkar, M. Lawrence GenomicFeatures: Tools for making and manipulating transcript centric annotations version 1.19.38.
 
+4. Lawrence M, Huber W, Pagès H, Aboyoun P, Carlson M, Gentleman R, Morgan M and Carey V (2013). Software for Computing and Annotating Genomic Ranges. PLoS Computational Biology, 9. http://dx.doi.org/10.1371/journal.pcbi.1003118, http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003118
 
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+5. Steffen Durinck, Wolfgang Huber biomaRt: Interface to BioMart databases (e.g. Ensembl, COSMIC ,Wormbase and Gramene) version 2.23.5.
 
-<h2 id="install-and-use">Installation and Use</h2>
+6. Durinck S, Spellman P, Birney E and Huber W (2009). Mapping identifiers for the integration of genomic datasets with the R/Bioconductor package biomaRt. Nature Protocols, 4, pp. 1184–1191.
 
-Follow [installation instructions](/install/) to start using these
-packages.  To install the annotations associated with the Affymetrix
-Human Genome U95 V 2.0, and with Gene Ontology, use
+7. Durinck S, Moreau Y, Kasprzyk A, Davis S, De Moor B, Brazma A and Huber W (2005). BioMart and Bioconductor: a powerful link between biological databases and microarray data analysis. Bioinformatics, 21, pp. 3439–3440.
 
-```{r eval=FALSE}
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("hgu95av2.db", "GO.db"))
-```
+8. Morgan M, Carlson M, Tenenbaum D and Arora S. AnnotationHub: Client to access AnnotationHub resources. R package version 2.0.1. 
 
-Package installation is required only once per R installation. View a
-full list of available
-[software](/packages/release/bioc/)
-and 
-[annotation](/packages/release/data/annotation/)
-packages.
+9. Carlson M, Pages H, Morgan M and Obenchain V. OrganismDbi: Software to enable the smooth interfacing of different database packages. R package version 1.10.0. 
 
-To use the `AnnotationDbi` and `GO.db` package, evaluate the commands
+10. Pages H. BSgenome: Infrastructure for Biostrings-based genome data packages. R package version 1.36.0. 
 
-```{r eval=FALSE}
-library(AnnotationDbi)
-library(GO.db)
-```
+11. Pages H, Aboyoun P, Gentleman R and DebRoy S. Biostrings: String objects representing biological sequences, and matching algorithms. R package version 2.36.0. 
 
-These commands are required once in each R session.
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-<h2 id="exploring-package-content">Exploring Package Content</h2>
-
-Packages have extensive help pages, and include vignettes highlighting
-common use cases. The help pages and vignettes are available from
-within R. After loading a package, use syntax like
-
-    help(package="GO.db")
-    ?select
-
-to obtain an overview of help on the `GO.db` package, and the `select`
-method.  The `AnnotationDbi` package is used by most `.db`
-packages. View the vignettes in the `AnnotationDbi` package with
-
-```{r eval=FALSE}
-browseVignettes(package="AnnotationDbi")
-```
-
-To view vignettes (providing a more comprehensive introduction to
-package functionality) in the `AnnotationDbi` package. Use
-
-```{r eval=FALSE}
-help.start()
-```
-
-To open a web page containing comprehensive help resources.
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
-
-<h2 id="annotation-resources">Annotation Resources</h2>
-
-The following guides the user through key annotation packages.  Users
-interested in how to create custom chip packages should see the
-vignettes in the `AnnotationForge` package. There is additional
-information in the `AnnotationDbi`, `OrganismDbi` and
-`GenomicFeatures` packages for how to use some of the extra tools
-provided. You can also refer to the [complete list of annotation
-packages](/packages/release/BiocViews.html#___AnnotationData).
-
-### Key Packages ###
-
-* [AnnotationDbi](/packages/release/bioc/html/AnnotationDbi.html)
-  Almost all annotations require the `AnnotationDbi` package. This
-  package will be automatically installed for you if you install
-  another ".db" annotation package using biocLite(). It contains the
-  code to allow annotation mapping objects to be made and manipulated
-  as well as code to use the select methods etc..
-* [OrganismDbi](/packages/release/bioc/html/.html)
-  OrganismDbi allows meta packages that enable the user to access
-  resources from several different packages as if they were coming
-  from one place.  So for example the Homo.sapiens package is enabled
-  by OrganismDbi and allows the user to get access to GO.db, the
-  associated organism package IDs and the related transcript data for
-  the hg19 build of the human genome all as if it were contained in a
-  single convenient object.
-* [GenomicFeatures](/packages/release/bioc/html/.html)
-  GenomicFeatures allows the existance of TxDb objects and
-  allows convenient representation of ranges from Transcritomes.
-  There are accessors for things like exons, transcripts as well as
-  the select method for retrieving data from packages supported by
-  GenomicFeatures.
-* [AnnotationForge](/packages/release/bioc/html/.html)
-  AnnotationForge documents and assists in the creation of some kinds
-  of custom annotation packages. 
-* [Category](/packages/release/bioc/html/Category.html)
-  This is the base level package for dealing with annotation questions
-  that involve categorical data.
-* [GOstats](/packages/release/bioc/html/GOstats.html)
-  This builds on what is found in Category so that you can do
-  hypergeometric testing using the Gene Ontology found in the GO.db
-  package.
-* [annotate](/packages/release/bioc/html/annotate.html)
-  This package contains many helpful tools for making use of
-  annotations.
-* [AnnotationHub](/packages/release/bioc/html/AnnotationHub.html)
-  This package allows the user to create an AnnotationHub which
-  downloads and caches useful annotation data as R objects.
-* [biomaRt](/packages/release/bioc/html/biomaRt.html)
-  This package is a great way to pull annotation data directly from
-  web based annotation resources. Such data is extremely "current", so
-  it is a good idea to save and locally manage the data that you pull
-  down from biomaRt so that your code will be reproducible.
-* [VariantAnnotation](/packages/release/bioc/html/VariantAnnotation.html)
-  This package contains useful tools for managing genetic data and for      
-  quickly assessing if a detected change is inside of a coding region 
-  or not.
-
-
-### Types of Annotation Packages ###
-
-* Organism annotation packages contain all the gene based data for an entire
-  organism. All Organism packages are named like this:
-  org."Xx"."yy".db. Where "Xx" is the abbreviation for Genus and
-  species. And "yy" is the source of the central ID that is used to
-  tie all the data together. Some examples are:
-  [org.Hs.eg.db](/packages/release/data/annotation/html/org.Hs.eg.db.html)
-  which is for Homo sapiens and is based upon Entrez Gene IDs. And
-  [org.At.tair.db](/packages/release/data/annotation/html/org.At.tair.db.html)
-  which is for Arabidopsis thaliana and is based on the tair IDs.
-* TransriptDb packages contain range and chromosome information for
-  specific transcriptomes.  These are based on a particular genome
-  build and are are the place to look for where a
-  gene/transcripts/exon coordinate information is relative to a
-  genome.  These are also named in a way that tells you about where
-  the data came from and can be generated with functions contained in
-  the GenomicFeatures package.
-* OrganismDb packages are named for the species they represent (such
-  as the Homo.sapiens package).  These packages contain references to
-  other key annotations packages and can thus represent all the
-  underlying data as if it were coming from one place.  So for
-  example, the Homo.sapiens package can allow you to retrieve data
-  about the ranges of a genes transcripts at the same time that you
-  extract it's gene name because it represents both a the
-  transcriptome and the relevant org package for Homo sapiens.  These
-  can be generated using functions in the OrganismDbi package if you
-  have specific packages that you want to link together.
-* There are also packages for questions about general systems biology
-  data. Some examples of this are:
-  [KEGG.db](/packages/release/data/annotation/html/KEGG.db.html)
-  for accessing data that pertains to Kyoto Encyclopedia of Genes and
-  Genomes. [GO.db](/packages/release/data/annotation/html/GO.db.html) for
-  accessing data that pertains to the Gene
-  Ontology. [PFAM.db](/packages/release/data/annotation/html/PFAM.db.html)
-  for accessing data that pertains to different protein family
-  identifiers and how they relate to each other.
-* Chip annotation packages are for accessing only the data from one
-  specific platform at a time. These packages are named like this:
-  "platformName".db.  Where "platformName" is the name of the chip
-  platform that these packages refer to. And example would be
-  [hgu95av2.db](/packages/release/data/annotation/html/hgu95av2.db.html)
-  which is for the hgu95av2 platform from Affymetrix.
-* Inparanoid homology packages are for accessing inparanoid
-  data. hom."Xx".inp.db Where "Xx" is the abbreviation for Genus and
-  species. An example is
-  [hom.Hs.inp.db](/packages/release/data/annotation/html/hom.Hs.inp.db.html)
-  which contains inparanoid based mapping data between genes for Homo
-  sapiens and 35 other organisms.</li>
-* .db0 packages are for making custom platform specific
-  packages. These packages are named like this: "name".db0. Where
-  "name" is the name of the organism being represented. A list of the
-  available .db0 packages can be obtained by calling
-  available.db0Pkgs(). There is one of these for each supported
-  organism. An example would be
-  [human.db0](/packages/release/data/annotation/html/human.db0.html). Users
-  should not need these installed unless they plan to make custom chip
-  packages according the guidelines in the SQLForge vignette that is
-  included with the `AnnotationDbi` package.  These packages must be
-  upgraded before you attempt to update your custom chip packages as
-  they contain the source databases needed by the SQLForge code.
-* For relevant Affymetrix platforms you may also want the cdf and
-  probe packages for that platform.  These packages are named using
-  the following convention: "platformName"cdf and
-  "platformName"probe. Where "platformName" is the name of the chip
-  platform that these packages refer to.
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
+12. Carlson M, and Pages H. AnnotationForge: Code for Building Annotation Database Packages. R package version 1.10.0. 
 
 
 
 
 
-### Answers for exercises: ###
+
+Answers for exercises
+========================================================
 
 <h3>Exercise 1:</h3>
+
+The 1st thing you need to do is look for thing from UCSC
+```{r}
+ahs <- query(ah, "UCSC")
+```
+
+Then you can look for Genome values that match 'hg19' and a species that matches 'Homo sapiens'.
+```{r}
+ahs <- subset(ahs, ahs$genome=='hg19')
+length(ahs)
+ahs <- subset(ahs, ahs$species=='Homo sapiens') 
+length(ahs)
+```
+You might notice that the last two filtering steps are redundant (IOW doing the 1st of them is the same as doing both of them.)  If this were not the case, we might suspect that there was a problem with the metadata.
+
+
+<h3>Exercise 2:</h3>
+
+This pulls down the oreganno annotations.  Which are described on the
+UCSC site thusly: "This track displays literature-curated regulatory
+regions, transcription factor binding sites, and regulatory
+polymorphisms from ORegAnno (Open Regulatory Annotation). For more
+detailed information on a particular regulatory element, follow the
+link to ORegAnno from the details page."
+
+```{r}
+ahs <- query(ah, 'oreganno')
+ahs
+ahs[1]
+oreg <- ahs[['AH5087']]
+oreg
+```
+
+
+
+<h3>Exercise 3:</h3>
+
 
 ```{r}
 keys <- "MSX2"
@@ -970,8 +648,7 @@ select(org.Hs.eg.db, keys, columns, keytype="SYMBOL")
 ```
 
 
-
-<h3>Exercise 2:</h3>
+<h3>Exercise 4:</h3>
 
 ```{r}
 ## 1st get all the gene symbols
@@ -990,46 +667,7 @@ select(org.Hs.eg.db, badSymbols, "ENTREZID", "SYMBOL")
 ```
 
 
-
-<h3>Exercise 3:</h3>
-
-Initially you might expect that hgu95av2.db will have less information
-in it.  After all, it's an old Affymetrix platform that was developed
-before we even had a very complete human genome. So you might try
-something like this:
-```{r}
-chipSymbols <- keys(hgu95av2.db, keytype="SYMBOL")
-orgSymbols <- keys(org.Hs.eg.db, keytype="SYMBOL")
-length(orgSymbols)
-length(chipSymbols)
-```
-And you might feel confused and so you might try this:
-```{r}
-dim(select(org.Hs.eg.db,orgSymbols, "ENTREZID", "SYMBOL"))
-dim(select(hgu95av2.db,chipSymbols, "ENTREZID", "SYMBOL")) 
-```
-And you might also have noticed this:
-```{r}
-length(columns(org.Hs.eg.db)) < length(columns(hgu95av2.db))
-```
-Well the answer you have in front of you is actually correct.  There
-actually is more information available in the hgu95av2.db object than
-in the org.Hs.eg.db object.  This is because even though the
-hgu95av2.db object technically can only have probes for some genes in
-the genome, it still (behind the scenes) retrieves data about gene
-names etc. from the org.Hs.eg.db package.  So it effectively has
-access to all the data from the org package PLUS the probes for that
-platform and what those map to.  So that means that for there will be
-information about many gene symbols that don't actually match up to
-any probeset Ids. And that is what we see if we use gene symbols to
-look up the probes Ids.
-```{r}
-head(select(hgu95av2.db,chipSymbols, "PROBEID", "SYMBOL"))
-```
-
-
-
-<h3>Exercise 4:</h3>
+<h3>Exercise 5:</h3>
 
 So to retrieve this information using select you need to do it like this:
 
@@ -1054,7 +692,7 @@ automatically be returned as part of the object.
 
 
 
-<h3>Exercise 5:</h3>
+<h3>Exercise 6:</h3>
 
 ```{r}
 library(TxDb.Athaliana.BioMart.plantsmart22)
@@ -1068,7 +706,10 @@ you are looking at.
 
 
 
-<h3>Exercise 6:</h3>
+
+
+
+<h3>Exercise 7:</h3>
 
 ```{r eval=FALSE}
 library(Homo.sapiens)
@@ -1088,7 +729,7 @@ head(res2)
 ```
 
 
-<h3>Exercise 7:</h3>
+<h3>Exercise 8:</h3>
 
 ```{r}
 columns(Homo.sapiens)
@@ -1113,7 +754,7 @@ strongly recommend using TXSTART instead of CHRLOC.  Howeverm CHRLOC
 still remains in the org packages for historical reasons.
 
 
-<h3>Exercise 8</h3>
+<h3>Exercise 9</h3>
 To find the keys that match, make use of the pattern and column arguments.
 ```{r}
 library(Homo.sapiens)
@@ -1126,38 +767,19 @@ select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
 ```
 
 
-<h3>Exercise 9:</h3>
-
-The 1st thing you need to do is look for thing from UCSC
-```{r}
-ahs <- query(ah, "UCSC")
-```
-
-Then you can look for Genome values that match 'hg19' and a species that matches 'Homo sapiens'.
-```{r}
-ahs <- subset(ahs, ahs$genome=='hg19')
-length(ahs)
-ahs <- subset(ahs, ahs$species=='Homo sapiens') 
-length(ahs)
-```
-You might notice that the last two filtering steps are redundant (IOW doing either one of them is the same as doing both of them.)  If this were not the case, we might suspect that there was a problem with the metadata.
-
-
 <h3>Exercise 10:</h3>
 
-This pulls down the oreganno annotations.  Which are described on the
-UCSC site thusly: "This track displays literature-curated regulatory
-regions, transcription factor binding sites, and regulatory
-polymorphisms from ORegAnno (Open Regulatory Annotation). For more
-detailed information on a particular regulatory element, follow the
-link to ORegAnno from the details page."
-
 ```{r}
-ahs <- query(ah, 'oreganno')
-ahs
-ahs[1]
-oreg <- ahs[['AH5087']]
-oreg
+library("BSgenome.Hsapiens.UCSC.hg19")
+## Get the transcript ranges grouped by gene
+txby <- transcriptsBy(Homo.sapiens, by="gene")
+## look up the entrez ID for the gene symbol 'PTEN'
+select(Homo.sapiens, keys='PTEN', columns='ENTREZID', keytype='SYMBOL')
+## subset that genes transcripts
+geneOfInterest <- txby[["5728"]]
+## extract the sequence
+res <- getSeq(Hsapiens, geneOfInterest)
+res
 ```
 
 
@@ -1202,10 +824,3 @@ few years from now.
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="sessionInfo">SessionInfo</h2>
-
-```{r}
-sessionInfo()
-```
-
-<p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
