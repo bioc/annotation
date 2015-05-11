@@ -1,8 +1,11 @@
----
-output: html_document
----
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Annotation}
+-->
 
-Genomic Annotation Resources in Bioconductor
+
+
+![](/images/icons/help.gif)Genomic Annotation Resources in Bioconductor
 ========================================================
 
 Annotation resources make up a significant proportion of the Bioconductor project[1].  And there are also a diverse set of online resources available which are accessed using specific packages.  This walkthrough will describe the most popular of these resources and give some high level examples on how to use them.
