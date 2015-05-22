@@ -54,14 +54,23 @@ library(VariantAnnotation)
 library(AnnotationHub)
 ```
 
+The Hub returns a VcfFile object with a reference to the file on disk.
+
 ```{r}
 hub <- AnnotationHub()
-vcf <- hub[['AH7477']] 
+fl <- hub[['AH47004']]
+fl
+```
+
+Read the data into a VCF object:
+
+```{r}
+vcf <- readVcf(fl, "hg19")
 dim(vcf)
 ```
 
-When performing overlap operations the seqlevels and genome of the objects
-must match. Here were modify the VCF to match the TxDb.
+Overlap operations require that seqlevels and the genome of the objects match.
+Here were modify the VCF seqlevels to match the TxDb.
 
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
@@ -69,15 +78,17 @@ suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
 
 ```{r}
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-```
-
-```{r}
 txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
 head(seqlevels(txdb_hg19))
 seqlevels(vcf)
 seqlevels(vcf) <- paste0("chr", seqlevels(vcf))
+```
+
+The genomes already match so no change needed.
+
+```{r}
 unique(genome(txdb_hg19))
-genome(vcf) <- "hg19"
+unique(genome(vcf))
 ```
 
 Sanity check to confirm we have matching seqlevels.
