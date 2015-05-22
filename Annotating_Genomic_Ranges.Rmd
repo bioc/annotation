@@ -1,34 +1,38 @@
 <!--
 %\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{Annotating Ranges}
+%\VignetteIndexEntry{Annotating Genomic Ranges}
 -->
 
-#![](/images/icons/help.gif)Annotating Ranges
+---
+Author: Valerie Obenchain
+---
 
 
-Bioconductor can import diverse sequence-related file types, including
-fasta, fastq, BAM, gff, bed, and wig files, among others. Packages
-support common and advanced sequence manipulation operations such as
-trimming, transformation, and alignment.  Domain-specific analyses
-include quality assessment, ChIP-seq, differential expression,
-RNA-seq, and other approaches. Bioconductor includes an interface to
-the Sequence Read Archive (via the
-[SRAdb](/packages/release/bioc/html/SRAdb.html) package).
+<h1> Annotating Genomic Ranges</h1>
 
-* [Sample Workflow](#sample-workflow)  
+* [Background](#background)  
 * [Data Preparation](#data-preparation)
 * [Location in and Around Genes](#location)
 * [Annotate by ID](#annotate-by-id)
 * [Annotate by Position](#annotate-by-position)
 * [Annotating Variants](#annotating-variants)
+* [Exercises](#exercises)
 
-<h2 id="sample-workflow">Sample Workflow</h2>
+<h2 id="background">Background</h2>
 
-This workflow walks through the annotation of a generic set of ranges
-with Bioconductor packages. The ranges can be any user-defined region 
-of interest or can be from a public file.
+Bioconductor can import diverse sequence-related file types, including fasta,
+fastq, BAM, VCF, gff, bed, and wig files, among others. Packages support common
+and advanced sequence manipulation operations such as trimming, transformation,
+and alignment.  Domain-specific analyses include quality assessment, ChIP-seq,
+differential expression, RNA-seq, and other approaches. Bioconductor includes
+an interface to the Sequence Read Archive (via the
+[SRAdb](/packages/release/bioc/html/SRAdb.html) package).
 
-<h3 id="data-preparation">Data Preparation</h3>
+This workflow walks through the annotation of a generic set of ranges with
+Bioconductor packages. The ranges can be any user-defined region of interest or
+can be from a public file.
+
+<h2 id="data-preparation">Data Preparation</h2>
 
 As a first step, data are put into a GRanges object so we can take
 advantage of overlap operations and store identifiers as
@@ -105,7 +109,7 @@ unique(genome(txdb_mm10))
 genome(gr_mm10) <- "mm10"
 ```
 
-<h3 id="location">Location in and Around Genes</h3>
+<h2 id="location">Location in and Around Genes</h2>
 
 locateVariants() in the VariantAnnotation package annotates ranges
 with transcript, exon, cds and gene ID's from a TxDb. Various
@@ -123,7 +127,7 @@ loc_mm10 <- locateVariants(gr_mm10, txdb_mm10, AllVariants())
 table(loc_mm10$LOCATION)
 ```
 
-<h3 id="annotate-by-id">Annotate by ID</h3>
+<h2 id="annotate-by-id">Annotate by ID</h2>
 
 The ID's returned from locateVariants() can be used in select() to map 
 to ID's in other annotation packages.
@@ -156,7 +160,7 @@ keys <- unique(loc_mm10$GENEID)
 head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
 ```
 
-<h3 id="annotate-by-position">Annotate by Position</h3>
+<h2 id="annotate-by-position">Annotate by Position</h2>
 
 Files stored in the AnnotationHub have been pre-processed into
 ranged-based R objects such as a GRanges, GAlignments and VCF.
@@ -190,7 +194,7 @@ lapply(ov_hg19, head, n=3)
 Annotating the mouse ranges in the same fashion is left 
 as an exercise.
 
-<h3 id="annotating-variants">Annotating Variants</h3>
+<h2 id="annotating-variants">Annotating Variants</h2>
 
 <h4 id=amino-acid-coding-changes">Amino acid coding changes</h4>
 For the set of dbSNP variants that fall in coding regions, amino
@@ -236,6 +240,12 @@ gr <- ensemblVEP(fl)
 ```{r}
 head(gr, 3)
 ```
+
+```{r sess}
+sessionInfo()
+```
+
+<h2 id="exercises">Exercises</h2>
 
 Exercise 1: VCF header and reading data subsets.
 
