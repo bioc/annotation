@@ -15,7 +15,6 @@ Author: Valerie Obenchain
 * [Location in and Around Genes](#location)
 * [Annotate by ID](#annotate-by-id)
 * [Annotate by Position](#annotate-by-position)
-* [Annotating Variants](#annotating-variants)
 * [Exercises](#exercises)
 
 <h2 id="background">Background</h2>
@@ -70,7 +69,7 @@ dim(vcf)
 ```
 
 Overlap operations require that seqlevels and the genome of the objects match.
-Here were modify the VCF seqlevels to match the TxDb.
+Here we modify the VCF seqlevels to match the TxDb.
 
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
@@ -84,17 +83,25 @@ seqlevels(vcf)
 seqlevels(vcf) <- paste0("chr", seqlevels(vcf))
 ```
 
-The genomes already match so no change needed.
+Sanity check to confirm we have matching seqlevels.
+```{r}
+intersect(seqlevels(txdb_hg19), seqlevels(vcf))
+```
+
+The genomes already match so no change is needed.
 
 ```{r}
 unique(genome(txdb_hg19))
 unique(genome(vcf))
 ```
 
-Sanity check to confirm we have matching seqlevels.
+We are only interested in the standard chromosomes so we drop the rest.
+
 ```{r}
-intersect(seqlevels(txdb_hg19), seqlevels(vcf))
+txdb_hg19 <- keepStandardChromosomes(txdb_hg19)
+vcf <- keepStandardChromosomes(vcf)
 ```
+
 
 The GRanges in a VCF object is extracted with 'rowRanges()'.
 ```{r}
@@ -226,36 +233,6 @@ library(BSgenome.Hsapiens.UCSC.hg19)
 
 ```{r}
 head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
-```
-
-<h4 id="VEP">ensemblVEP Package</h4>
-The ensemblVEP package provides access to the online Ensembl Variant
-Effect Predictor (VEP tool).  The VEP tool ouputs predictions
-of functional consequences of known and unknown variants as reported 
-by Sequence Ontology or Ensembl. Regulatory region consequences, HGNC, 
-Ensembl protein identifiers, HGVS, co-located variants are optional outputs.
-ensemblVEP() accepts the name of a VCF file and returns a VCF on disk or
-GRanges in the R workspace.
-
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(ensemblVEP))
-```
-
-
-```{r}
-library(ensemblVEP)
-fl <- system.file("extdata", "ex2.vcf", 
-                  package="VariantAnnotation")
-```
-```{r, echo=FALSE}
-gr <- ensemblVEP(fl)
-```
-```{r}
-gr <- ensemblVEP(fl)
-```
-
-```{r}
-head(gr, 3)
 ```
 
 ```{r sess}
