@@ -48,10 +48,11 @@ the file is available as a pre-parsed VCF object in the AnnotationHub.
 suppressPackageStartupMessages(library(VariantAnnotation))
 suppressPackageStartupMessages(library(AnnotationHub))
 ```
-<pre><code>library(VariantAnnotation)
-library(AnnotationHub)
-</code></pre>
 
+```{r}
+library(VariantAnnotation)
+library(AnnotationHub)
+```
 
 ```{r}
 hub <- AnnotationHub()
@@ -65,8 +66,10 @@ must match. Here were modify the VCF to match the TxDb.
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
 ```
-<pre><code>library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-</code></pre>
+
+```{r}
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+```
 
 ```{r}
 txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
@@ -135,8 +138,9 @@ to ID's in other annotation packages.
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(org.Hs.eg.db))
 ```
-<pre><code>library(org.Hs.eg.db)
-</code></pre>
+```{r}
+library(org.Hs.eg.db)
+```
 
 ```{r}
 cols <- c("UNIPROT", "PFAM")
@@ -182,9 +186,9 @@ Iterate over the first 3 files and extract ranges that overlap 'gr_hg19'.
 ```{r, echo=FALSE}
 ov_hg19 <- lapply(1:3, function(i) subsetByOverlaps(hub_hg19[[i]], gr_hg19))
 ```
-<pre><code>
+```{r}
 ov_hg19 <- lapply(1:3, function(i) subsetByOverlaps(hub_hg19[[i]], gr_hg19))
-</code></pre>
+```
 
 Inspect the results.
 ```{r} 
@@ -205,8 +209,9 @@ each variant.
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg19))
 ```
-<pre><code>library(BSgenome.Hsapiens.UCSC.hg19)
-</code></pre>
+```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
+```
 
 ```{r}
 head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
@@ -234,8 +239,9 @@ fl <- system.file("extdata", "ex2.vcf",
 ```{r, echo=FALSE}
 gr <- ensemblVEP(fl)
 ```
-<pre><code>gr <- ensemblVEP(fl)
-</code></pre>
+```{r}
+gr <- ensemblVEP(fl)
+```
 
 ```{r}
 head(gr, 3)
