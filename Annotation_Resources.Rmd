@@ -9,7 +9,7 @@ Authors: Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain,
 Key Words: annotation, next-generation sequencing, R, Bioconductor
 ---
 
-<h1> Genomic Annotation Resources </h1>
+<h1> Annotation Resources </h1>
 
 * [Introduction](#introduction) 
 * [Set Up](#setup) 
