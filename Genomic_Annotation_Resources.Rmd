@@ -132,7 +132,7 @@ covered will include the following:
 <h2> id="SetUp"> Set Up </h2>
 
 In this chapter we make use of several Bioconductor packages.  You can install
-them with by using biocLite() like this:
+them with biocLite():
 
 ```{r, eval=FALSE} source("http://bioconductor.org/biocLite.R")
 biocLite("AnnotationHub") biocLite("Homo.sapiens")
@@ -157,10 +157,14 @@ not have been considered annotations even a few years ago.  To get started with
 the AnnotationHub users only need to load the package and then create a local
 AnnotationHub object like this:
 
-```{r, echo=FALSE} library("AnnotationHub") ah <- AnnotationHub() 
+```{r, echo=FALSE} 
+library("AnnotationHub") 
+ah <- AnnotationHub() 
 ```
 
-```{r, eval=FALSE} library("AnnotationHub") ah <- AnnotationHub() 
+```{r, eval=FALSE} 
+library("AnnotationHub") 
+ah <- AnnotationHub() 
 ```
 
 The very 1st time that you call the AnnotationHub, it will create a cache
@@ -173,7 +177,8 @@ The show method of an AnnotationHub object will tell you how many resources are
 currently accessible using that object as well as give a high level overview of
 the most common kinds of data present.
 
-```{r} ah 
+```{r} 
+ah 
 ```
 
 As you can see from the object above, there are a LOT of different resources
@@ -186,13 +191,15 @@ need to do is to type the name of your AnnotationHub object and then tab
 complete from the '$' operator.  And to see all possible contents of one of
 these categories you can pass that value in to unique like this:
 
-```{r} unique(ah$dataprovider) 
+```{r} 
+unique(ah$dataprovider) 
 ```
 
 One of the most valuable ways in which the data is labeled is according to the
 kind of R object that will be returned to you.
 
-```{r} unique(ah$rdataclass) 
+```{r} 
+unique(ah$rdataclass) 
 ```
 
 Once you have identified which sorts of metadata you would like to use to find
@@ -202,30 +209,37 @@ select only those records where the string 'GRanges' was in the metadata.  As
 you can see GRanges are one of the more popular formats for data that comes
 from the AnnotationHub.
 
-```{r} grs <- query(ah, "GRanges") grs 
+```{r} 
+grs <- query(ah, "GRanges") 
+grs 
 ```
 
 Or you can use subsetting to only select for matches on a specific field 
 
-```{r} grs <- ah[ah$rdataclass == "GRanges",] 
+```{r} 
+grs <- ah[ah$rdataclass == "GRanges",] 
 ```
 
 The subset function is also provided.
 
-```{r} orgs <- subset(ah, ah$rdataclass == "OrgDb") orgs 
+```{r} 
+orgs <- subset(ah, ah$rdataclass == "OrgDb") 
+orgs 
 ```
 
 And if you really need access to all the metadata you can extract it as a
 DataFrame using mcols() like so:
 
-```{r} meta <- mcols(ah) 
+```{r} 
+meta <- mcols(ah) 
 ```
 
 Also if you are a fan of GUI's you can use the display method to look at your
 data in a browser and return selected rows back as a smaller AnnotationHub
 object like this:
 
-```{r, eval=FALSE} sah <- display(ah) 
+```{r, eval=FALSE} 
+sah <- display(ah) 
 ```
 
 Calling this method will produce a web based interface like the one pictured
@@ -241,14 +255,18 @@ numeric index (1,2,3) or by AnnotationHub ID.  If you choose to use the former,
 you simply extract the element that you are interested in.  So for our chain
 example, you might just want to 1st one like this:
 
-```{r} res <- grs[[1]] head(res, n=3) 
+```{r} 
+res <- grs[[1]] 
+head(res, n=3) 
 ```
 
 Or you might have decided that you want to see the data for the green spotted
 pufferfish by that you spotted in the orgs subset under the name 'AH13961'.
 That data could also be extracted like this:
 
-```{r} rabbit <- orgs[["AH13960"]] rabbit 
+```{r} 
+rabbit <- orgs[["AH13960"]] 
+rabbit 
 ```
 
 <h3> id="AHexercises">AnnotationHub Exercises.</h3>
@@ -273,7 +291,8 @@ rabbit object in the example above you can see that it contains data for the
 European rabbit Oryctolagus cuniculus (taxonomy ID = 9986).  You can learn a
 little more about it by learning about the columns method.
 
-```{r} columns(rabbit) 
+```{r} 
+columns(rabbit) 
 ```
 
 The columns method gives you a vector of data types that can be retrieved from
@@ -283,7 +302,8 @@ several different data types that can be retrieved from the tetra object.
 A very similar method is the keytypes method, which will list all the data
 types that can also be used as keys.  
 
-```{r} keytypes(rabbit) 
+```{r} 
+keytypes(rabbit) 
 ```
 
 In many cases most of the things that are listed as columns will also come back
@@ -293,7 +313,8 @@ identical, we maintain two separate methods.
 Now that you can see what kinds of things can be used as keys, you can call the
 keys method to extract out all the keys of a given key type.
 
-```{r} head(keys(rabbit, keytype="ENTREZID")) 
+```{r} 
+head(keys(rabbit, keytype="ENTREZID")) 
 ```
 
 This is useful if you need to get all the IDs of a particular kind but the keys
@@ -301,14 +322,16 @@ method has a few extra arguments that can make it even more flexible.  For
 example, using the keys method you could also extract the gene SYMBOLS that
 contain "COX" like this:
 
-```{r} keys(rabbit, keytype="SYMBOL", pattern="COX") 
+```{r} 
+keys(rabbit, keytype="SYMBOL", pattern="COX") 
 ```
 
 Or if you really needed an other keytype, you can use the column argument to
 extract the ENTREZ GENE IDs for those gene SYMBOLS that contain the string
 "COX":
 
-```{r} keys(rabbit, keytype="ENTREZID", pattern="COX", column="SYMBOL") 
+```{r} 
+keys(rabbit, keytype="ENTREZID", pattern="COX", column="SYMBOL") 
 ```
 
 But often, you will really want to extract other data that matches a particular
@@ -316,8 +339,9 @@ key or set of keys.  For that there are two methods which you can use.  The
 more powerful of these is probably select.  Here is how you would look up the
 gene SYMBOL, and REFSEQ id for the entrez gene IDs "808231" and "808233".
 
-```{r} select(rabbit, keys=c("808231","808233"), columns=c("SYMBOL","REFSEQ"),
-keytype="ENTREZID") 
+```{r} 
+select(rabbit, keys=c("808231","808233"), columns=c("SYMBOL","REFSEQ"),
+       keytype="ENTREZID") 
 ```
 
 When you call it, select will return a data.frame that attempts to fill in
@@ -326,7 +350,8 @@ for things that have a many to one relationship to your keys it can result in
 an expansion of the data object that is returned.  For example, watch what
 happens when we ask for the GO terms for the same entrez gene ID:
 
-```{r} select(rabbit, keys="808233", columns="GO", keytype="ENTREZID") 
+```{r} 
+select(rabbit, keys="808233", columns="GO", keytype="ENTREZID") 
 ```
 
 Because there are about 9 GO terms associated with the gene "808233", you end
@@ -343,8 +368,8 @@ recommend that you look at the mapIds method.  Lets look at what happens if
 request the same basic information as in our recent select call, but instead
 using the mapIds method:
 
-```{r} mapIds(rabbit, keys=c("808231","808233"), column="GO",
-keytype="ENTREZID") 
+```{r} 
+mapIds(rabbit, keys=c("808231","808233"), column="GO", keytype="ENTREZID") 
 ```
 
 As you can see, the mapIds method allows you to simplify the result that is
@@ -358,8 +383,9 @@ keys that have multiple matches.  You can even define your own rule (as a
 function) and pass that in as an argument to multiVals.  Lets look at what
 happens when you return a list:
 
-```{r} mapIds(rabbit, keys=c("808231","808233"), column="GO",
-keytype="ENTREZID", multiVals="list") 
+```{r} 
+mapIds(rabbit, keys=c("808231","808233"), column="GO", 
+       keytype="ENTREZID", multiVals="list") 
 ```
 
 Now you know how to extract information from an OrgDb object, you might find it
