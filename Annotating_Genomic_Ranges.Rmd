@@ -10,7 +10,7 @@ Author: Valerie Obenchain
 
 <h1> Annotating Genomic Ranges</h1>
 
-* [Background](#background)  
+* [Background](#background)
 * [Data Preparation](#data-preparation)
 * [Location in and Around Genes](#location)
 * [Annotate by ID](#annotate-by-id)
