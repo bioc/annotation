@@ -27,6 +27,7 @@ Key Words: annotation, next-generation sequencing, R, Bioconductor
     * [biomaRt exercises](#biomaRtEx) 
 * [Creating annotation objects](#creation)
 * [Important considerations](#considerations)
+* [sessionInfo()](#sessioninfo)
 * [Acknowledgements](#acknowledgements)
 * [References](#references)
 * [Answers for exercises](#answers)
@@ -55,11 +56,12 @@ were: as a reference for additional comparisons.
 Another change that is underway with annotations in Bioconductor is in the way
 that they are obtained.  In the past annotations existed almost exclusively as
 separate annotation packages[2,3,4].  Today packages are still an enormous
-source of annotations.  The current repository contains over eight hundred
-annotation packages
-(http://bioconductor.org/packages/release/BiocViews.html#___AnnotationData).
-This table summarizes some of the more important classes of annotation objects 
-that are often accessed using packages:
+source of annotations. The current 
+[release repository](http://bioconductor.org/packages/release/BiocViews.html#___AnnotationData)
+contains over eight hundred annotation packages. This table summarizes some 
+of the more important classes of annotation objects that are often accessed 
+using packages:
+
 
 <style>
 table, th, td {
@@ -83,30 +85,32 @@ th {
   <tbody>
   <tr>
     <td> TxDb </td>
-    <td> TxDb.Hsapiens.UCSC.hg19.knownGene </td>
+    <td>
+    [TxDb.Hsapiens.UCSC.hg19.knownGene](http://bioconductor.org/packages/TxDb.Hsapiens.UCSC.hg19.knownGene/) </td>
     <td> Transcriptome ranges for the known gene track of Homo sapiens,
          e.g., introns, exons, UTR regions. </td>
   </tr>
   <tr>
     <td> OrgDb </td>
-    <td> org.Hs.eg.db </td>
+    <td> [org.Hs.eg.db](http://bioconductor.org/packages/org.Hs.eg.db/) </td>
     <td> Gene-based information for Homo sapiens; useful for mapping between
          gene IDs, Names, Symbols, GO and KEGG identifiers, etc. </td>
   </tr>
   <tr>
     <td> BSgenome </td>
-    <td> BSgenome.Hsapiens.UCSC.hg19 </td>
+    <td>
+    [BSgenome.Hsapiens.UCSC.hg19](http://bioconductor.org/packages/BSgenome.Hsapiens.UCSC.hg19/) </td>
     <td> Full genome sequence for Homo sapiens. </td>
   </tr>
   <tr>
     <td> OrganismDb </td>
-    <td> Homo.sapiens </td>
+    <td> [Homo.sapiens](http://bioconductor.org/packages/Homo.sapiens/) </td>
     <td> Collection of multiple annotations for a common organism
          and genome build. </td> 
   </tr>
   <tr>
     <td> AnnotationHub </td>
-    <td> AnnotationHub </td>
+    <td> [AnnotationHub](http://bioconductor.org/packages/AnnotationHub/) </td>
     <td> Provides a convenient interface to annotations from many 
          different sources; objects are returned as fully parsed Bioconductor
          data objects or as the name of a file on disk. </td>
@@ -825,11 +829,14 @@ obviously, this system cannot warn end users if they have not been vigilant
 about updating their software to the latest version. So please take the time to
 always update your software to the latest version.
 
-In order to stay abreast of new developments users are also encouraged to
-explore the bioconductor website which contains many current walkthroughs and
-vignettes (http://bioconductor.org/), and also to ask questions on the forums
-(https://support.bioconductor.org/). 
+To stay abreast of new developments users are encouraged to
+explore the [bioconductor website](http://bioconductor.org/) which contains 
+many current walkthroughs and vignettes. Also visit the 
+[support site](https://support.bioconductor.org/) where you can ask questions
+and engage in discussions.
 
+
+<h2 id="sessioninfo"> sessionInfo() </h2>
 
 Package versions used in this tutorial:
 
