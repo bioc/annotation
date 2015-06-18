@@ -87,7 +87,7 @@ th {
       <td> TxDb </td>
       <td>
         <a href =
-          http://bioconductor.org/packages/TxDb.Hsapiens.UCSC.hg19.knownGene/>
+          "http://bioconductor.org/packages/TxDb.Hsapiens.UCSC.hg19.knownGene/">
           <div> TxDb.Hsapiens.UCSC.hg19.knownGene </div>
         </a>
       </td>
@@ -97,7 +97,7 @@ th {
     <tr>
       <td> OrgDb </td>
       <td> 
-        <a href = http://bioconductor.org/packages/org.Hs.eg.db/>
+        <a href = "http://bioconductor.org/packages/org.Hs.eg.db/">
         <div> org.Hs.eg.db </div>
         </a>
       </td>
@@ -107,7 +107,8 @@ th {
     <tr>
       <td> BSgenome </td>
       <td>
-        <a href = http://bioconductor.org/packages/BSgenome.Hsapiens.UCSC.hg19/>
+        <a href =
+        "http://bioconductor.org/packages/BSgenome.Hsapiens.UCSC.hg19/">
         <div> BSgenome.Hsapiens.UCSC.hg19 </div>
         </a>
       </td>
@@ -116,7 +117,7 @@ th {
     <tr>
       <td> OrganismDb </td>
       <td>
-        <a href = http://bioconductor.org/packages/Homo.sapiens/>
+        <a href = "http://bioconductor.org/packages/Homo.sapiens/">
         <div> Homo.sapiens </div>
         </a>
       </td>
@@ -126,7 +127,7 @@ th {
     <tr>
       <td> AnnotationHub </td>
       <td>
-        <a href = http://bioconductor.org/packages/AnnotationHub/>
+        <a href = "http://bioconductor.org/packages/AnnotationHub/">
         <div> AnnotationHub </div>
         </a>
       </td>
