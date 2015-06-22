@@ -531,7 +531,7 @@ following example, we are going to change the seqlevelStyle from 'UCSC' to
 ```{r}
 head(seqlevels(txdb))
 seqlevelsStyle(txdb)
-seqlevelsStyle(txdb) <- "ensembl"
+seqlevelsStyle(txdb) <- "NCBI"
 head(seqlevels(txdb))
 
 ## then change it back
