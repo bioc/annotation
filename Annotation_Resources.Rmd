@@ -1,12 +1,10 @@
-<!--
-%\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{Genomic Annotation Resources}
--->
-
 ---
 Authors: Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain, 
          and Martin Morgan
-Key Words: annotation, next-generation sequencing, R, Bioconductor
+KeyWords: annotation, next-generation sequencing, R, Bioconductor
+vignette: >
+  %\VignetteIndexEntry{Genomic Annotation Resources}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 <h1> Annotation Resources </h1>
