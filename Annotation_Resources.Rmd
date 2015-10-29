@@ -157,7 +157,8 @@ In this chapter we make use of several Bioconductor packages.  You can install
 them with biocLite():
 
 ```{r, eval=FALSE} 
-source("http://bioconductor.org/biocLite.R")
+## try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
 biocLite(c("AnnotationHub", "Homo.sapiens",
            "TxDb.Hsapiens.UCSC.hg19.knownGene", 
            "BSgenome.Hsapiens.UCSC.hg19", "biomaRt",
