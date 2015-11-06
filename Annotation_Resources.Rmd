@@ -289,7 +289,7 @@ pufferfish by that you spotted in the orgs subset under the name 'AH13961'.
 That data could also be extracted like this:
 
 ```{r} 
-rabbit <- orgs[["AH13960"]] 
+rabbit <- query(orgs, "Oryctolagus")[[1]] 
 rabbit 
 ```
 
