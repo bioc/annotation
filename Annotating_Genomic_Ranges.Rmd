@@ -55,8 +55,18 @@ The Hub returns a VcfFile object with a reference to the file on disk.
 
 ```{r}
 hub <- AnnotationHub()
-fl <- hub[['AH47004']]
-fl
+```
+
+Query the Hub for clinvar VCF files build GRCh37:
+
+```{r}
+mcols(query(hub, "clinvar.vcf", "GRCh37"))[,"sourceurl", drop=FALSE]
+```
+
+Retrieve one of the files:
+
+```{r}
+fl <- query(hub, "clinvar.vcf", "GRCh37")[[1]]
 ```
 
 Read the data into a VCF object:
