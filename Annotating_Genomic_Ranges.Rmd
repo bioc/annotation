@@ -10,6 +10,8 @@ vignette: >
 
 * [Background](#background)
 * [Data Preparation](#data-preparation)
+    * [Human hg19](#Human-hg19)
+    * [Mouse mm10](#Mouse-mm10)
 * [Location in and Around Genes](#location)
 * [Annotate by ID](#annotate-by-id)
 * [Annotate by Position](#annotate-by-position)
@@ -30,6 +32,8 @@ Bioconductor packages. The ranges can be any user-defined region of interest or
 can be from a public file.
 
 <h2 id="data-preparation">Data Preparation</h2>
+
+<h3 id="Human-hg19">Human hg19</h3>
 
 As a first step, data are put into a GRanges object so we can take
 advantage of overlap operations and store identifiers as
@@ -77,7 +81,7 @@ dim(vcf)
 ```
 
 Overlap operations require that seqlevels and the genome of the objects match.
-Here we modify the VCF seqlevels to match the TxDb.
+Here the VCF seqlevels are modified to match the TxDb.
 
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
@@ -89,6 +93,13 @@ txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
 head(seqlevels(txdb_hg19))
 seqlevels(vcf)
 seqlevels(vcf) <- paste0("chr", seqlevels(vcf))
+```
+
+For this example we'll annotate chromosomes 3 and 18:
+
+```{r}
+seqlevels(vcf, force=TRUE) <- c("chr3", "chr18")
+seqlevels(txdb_hg19) <- c("chr3", "chr18")
 ```
 
 Sanity check to confirm we have matching seqlevels.
@@ -103,18 +114,13 @@ unique(genome(txdb_hg19))
 unique(genome(vcf))
 ```
 
-We are only interested in the standard chromosomes so we drop the rest.
-
-```{r}
-txdb_hg19 <- keepStandardChromosomes(txdb_hg19)
-vcf <- keepStandardChromosomes(vcf)
-```
-
 
 The GRanges in a VCF object is extracted with 'rowRanges()'.
 ```{r}
 gr_hg19 <- rowRanges(vcf)
 ```
+
+<h3 id="Mouse-mm10">Mouse mm10</h3>
 
 The second set of ranges is a user-defined region of chromosome 4 in mouse.
 The idea here is that any region, known or unknown, can be annotated with
