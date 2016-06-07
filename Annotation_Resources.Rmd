@@ -547,8 +547,8 @@ chromosomes are set to be 'active'.
 head(isActiveSeq(txdb), n=30)
 ```
 
-But sometimes you might wish to ignore some of them.  For example, lets suppose
-that you wanted to ignore the Y chromosome from our txdb.  You could do that
+But sometimes you might wish to ignore some of them. For example, lets suppose
+that you wanted to ignore the Y chromosome from our txdb. You could do that
 like so:
 
 ```{r}
