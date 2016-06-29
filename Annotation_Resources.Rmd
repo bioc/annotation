@@ -677,7 +677,7 @@ get a DNAStringSet that corresponds to those ranges.  This can be a powerful
 way to learn what sequence was present from a particular range.  For example,
 here we can extract the range of a specific gene of interest like this.
 
-```{r}
+```{r eval=FALSE}
 txby <- transcriptsBy(txdb, by="gene")
 geneOfInterest <- txby[["4488"]]
 res <- getSeq(Hsapiens, geneOfInterest)
