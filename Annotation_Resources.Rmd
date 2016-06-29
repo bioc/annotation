@@ -1092,7 +1092,7 @@ select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
 
 <h3>Exercise 10:</h3>
 
-```{r}
+```{r eval=FALSE}
 library("BSgenome.Hsapiens.UCSC.hg19")
 ## Get the transcript ranges grouped by gene
 txby <- transcriptsBy(Homo.sapiens, by="gene")
