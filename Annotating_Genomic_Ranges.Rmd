@@ -1,23 +1,15 @@
 ---
-Author: Valerie Obenchain
+title: Annotating Genomic Ranges
+author: Valerie Obenchain
+output:
+  html_document:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Annotating Genomic Ranges}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-
-<h1> Annotating Genomic Ranges</h1>
-
-* [Background](#background)
-* [Data Preparation](#data-preparation)
-    * [Human hg19](#Human-hg19)
-    * [Mouse mm10](#Mouse-mm10)
-* [Location in and Around Genes](#location)
-* [Annotate by ID](#annotate-by-id)
-* [Annotate by Position](#annotate-by-position)
-* [Exercises](#exercises)
-
-<h2 id="background">Background</h2>
+# Background
 
 Bioconductor can import diverse sequence-related file types, including fasta,
 fastq, BAM, VCF, gff, bed, and wig files, among others. Packages support common
@@ -31,9 +23,9 @@ This workflow walks through the annotation of a generic set of ranges with
 Bioconductor packages. The ranges can be any user-defined region of interest or
 can be from a public file.
 
-<h2 id="data-preparation">Data Preparation</h2>
+# Data Preparation
 
-<h3 id="Human-hg19">Human hg19</h3>
+## Human hg19
 
 As a first step, data are put into a GRanges object so we can take
 advantage of overlap operations and store identifiers as
@@ -120,7 +112,7 @@ The GRanges in a VCF object is extracted with 'rowRanges()'.
 gr_hg19 <- rowRanges(vcf)
 ```
 
-<h3 id="Mouse-mm10">Mouse mm10</h3>
+## Mouse mm10
 
 The second set of ranges is a user-defined region of chromosome 4 in mouse.
 The idea here is that any region, known or unknown, can be annotated with
@@ -144,7 +136,7 @@ unique(genome(txdb_mm10))
 genome(gr_mm10) <- "mm10"
 ```
 
-<h2 id="location">Location in and Around Genes</h2>
+# Location in and Around Genes
 
 locateVariants() in the VariantAnnotation package annotates ranges
 with transcript, exon, cds and gene ID's from a TxDb. Various
@@ -162,7 +154,7 @@ loc_mm10 <- locateVariants(gr_mm10, txdb_mm10, AllVariants())
 table(loc_mm10$LOCATION)
 ```
 
-<h2 id="annotate-by-id">Annotate by ID</h2>
+# Annotate by ID
 
 The ID's returned from locateVariants() can be used in select() to map 
 to ID's in other annotation packages.
@@ -196,7 +188,7 @@ keys <- unique(loc_mm10$GENEID)
 head(select(org.Mm.eg.db, keys, cols, keytype="ENSEMBL"))
 ```
 
-<h2 id="annotate-by-position">Annotate by Position</h2>
+# Annotate by Position
 
 Files stored in the AnnotationHub have been pre-processed into
 ranged-based R objects such as a GRanges, GAlignments and VCF.
@@ -230,7 +222,7 @@ lapply(ov_hg19, head, n=3)
 Annotating the mouse ranges in the same fashion is left 
 as an exercise.
 
-<h2 id="annotating-variants">Annotating Variants</h2>
+# Annotating Variants
 
 <h4 id=amino-acid-coding-changes">Amino acid coding changes</h4>
 For the set of dbSNP variants that fall in coding regions, amino
@@ -253,7 +245,7 @@ head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
 sessionInfo()
 ```
 
-<h2 id="exercises">Exercises</h2>
+# Exercises
 
 Exercise 1: VCF header and reading data subsets.
 

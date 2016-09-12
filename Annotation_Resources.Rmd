@@ -1,37 +1,17 @@
 ---
-Authors: Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain,
+title: Genomic Annotation Resources
+author: Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain,
          and Martin Morgan
+output:
+  html_document:
+    toc: true
 KeyWords: annotation, next-generation sequencing, R, Bioconductor
 vignette: >
   %\VignetteIndexEntry{Genomic Annotation Resources}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-<h1> Annotation Resources </h1>
-
-* [Introduction](#introduction)
-* [Set Up](#setup)
-* [Using AnnotationHub](#AnnotationHub)
-    * [AnnotationHub exercises](#AHEx)
-* [OrgDb Objects](#OrgDb)
-    * [OrgDb exercises](#OrgDbEx)
-* [TxDb Objects](#TxDb)
-    * [TxDb exercises](#TxDbEx)
-* [OrganismDb Objects](#OrganismDb)
-    * [OrganismDb exercises](#OrganismDbEx)
-* [BSgenome Objects](#BSgenome)
-    * [BSgenome exercises](#BSgenomeEx)
-* [Using the biomaRt web service](#biomaRt)
-    * [biomaRt exercises](#biomaRtEx)
-* [Creating annotation objects](#creation)
-* [Important considerations](#considerations)
-* [sessionInfo()](#sessioninfo)
-* [Acknowledgements](#acknowledgements)
-* [References](#references)
-* [Answers for exercises](#answers)
-
-
-<h2 id="introduction"> Introduction </h2>
+# Introduction
 
 Annotation resources make up a significant proportion of the Bioconductor
 project[1].  And there are also a diverse set of online resources available
@@ -151,7 +131,7 @@ additional resources that will inevitably be added later.  Topics that will be
 covered will include the following:
 
 
-<h2 id="setup"> Set Up </h2>
+# Set Up
 
 In this chapter we make use of several Bioconductor packages.  You can install
 them with biocLite():
@@ -168,7 +148,7 @@ The usage of the installed packages will be described in detail within the
 Usage section.
 
 
-<h2 id="AnnotationHub"> Using AnnotationHub </h2>
+# Using AnnotationHub
 
 The top of the list for learning about annotation resources is the relatively
 new AnnotationHub package[8]. The AnnotationHub was created to provide a
@@ -293,7 +273,7 @@ rabbit <- query(orgs, "Oryctolagus")[[1]]
 rabbit
 ```
 
-<h3 id="AHEx"> AnnotationHub exercises </h3>
+## AnnotationHub exercises
 
 Exercise 1: Use the AnnotationHub to extract UCSC data that is from Homo
 sapiens and also specifically from the hg19 genome. What happens to the hub
@@ -306,7 +286,7 @@ the oreganno track and save it into a local variable.
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="OrgDb"> OrgDb objects </h2>
+# OrgDb objects
 
 At this point you might be wondering: What is this OrgDb object about?  OrgDb
 objects are one member of a family of annotation objects that all represent
@@ -423,8 +403,7 @@ ReactomeDb objects which offer access to data from GO and reactome.  In the
 next section, we will be looking at one of the more popular classes of these
 objects: the TxDb object.
 
-
-<h3 id="OrgDbEx">OrgDb exercises</h3>
+## OrgDb exercises
 
 Exercise 3: Look at the help page for the different columns and keytypes values
 with: help("SYMBOL").  Now use this information and what we just described to
@@ -441,7 +420,7 @@ redundancy.
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="TxDb"> TxDb Objects </h2>
+# TxDb Objects
 
 As mentioned before, TxDb objects can be accessed using the standard set of
 methods: keytypes(), columns(), keys(), select(), and mapIds().  But because
@@ -556,7 +535,7 @@ isActiveSeq(txdb)["chrY"] <- FALSE
 head(isActiveSeq(txdb), n=26)
 ```
 
-<h3 id="TxDbEx"> TxDb exercises </h3>
+## TxDb exercises
 
 Exercise 5: Use the accessors for the TxDb.Hsapiens.UCSC.hg19.knownGene package
 to retrieve the gene id, transcript name and transcript chromosome for all the
@@ -571,7 +550,7 @@ they compare to what you saw in the TxDb.Hsapiens.UCSC.hg19.knownGene package?
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="OrganismDb"> OrganismDb Objects </h2>
+# OrganismDb Objects
 
 So what happens if you have data from multiple different Annotation objects.
 For example, what if you had gene SYMBOLS (found in an OrgDb object) and you
@@ -612,8 +591,7 @@ But one key difference between the range accessors for a TxDb object when
 compared to an OrganismDb object is that the number of things that can be
 requested via columns is much greater for the compound object...
 
-
-<h3 id="OrganismDbEx">OrganismDb exercises</h3>
+## OrganismDb exercises
 
 Exercise 7: Use the Homo.sapiens object to look up the gene symbol,
 transcript start and chromosome using select().  Then do the same
@@ -635,7 +613,7 @@ up the entrez gene IDs for all gene symbols that contain the letter
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="BSgenome"> BSgenome Objects  </h2>
+# BSgenome Objects
 
 Another important annotation resource type is a BSgenome package[10].  There
 are many BSgenome packages in the repository for you to choose from.  And you
@@ -689,7 +667,7 @@ a pattern in a string set etc.  You may not have noticed when it happened, but
 the Biostrings package was loaded when you loaded the BSgenome object, so these
 functions will already be available for you to explore.
 
-<h3 id="BSgenomeEx">BSgenome exercises</h3>
+## BSgenome exercises
 
 Exercise 10: Use what you have just learned to extract the sequence for the
 PTEN gene.
@@ -697,7 +675,7 @@ PTEN gene.
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="biomaRt"> biomaRt </h2>
+# biomaRt
 
 Another great annotation resource is the biomaRt package[5,6,7].  The biomaRt
 package exposes a huge family of different online annotation resources called
@@ -777,7 +755,7 @@ preference you can now also use the standard select methods with mart objects.
 head(columns(ensembl))
 ```
 
-<h3 id="biomaRtEx">biomaRt exercises</h3>
+## biomaRt exercises
 
 Exercise 11: Pull down GO terms for entrez gene id "1" from human by
 using the ensembl "hsapiens_gene_ensembl" dataset.
@@ -791,7 +769,7 @@ that is?
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
 
 
-<h2 id="creation"> Creating annotation objects </h2>
+# Creating annotation objects
 
 By now you are aware that Bioconductor has a lot of annotation resources.  But
 it is still completely impossible to have every annotation resource
@@ -833,7 +811,7 @@ make use of the install.packages() function (with the repos argument=NULL) to
 install whatever package source directory has just been created.  
 
 
-<h2 id="considerations"> Important considerations </h2>
+# Important considerations
 
 The bioconductor project represents a very large and active codebase from an
 active and engaged community. Because of this, you should expect that the
@@ -855,7 +833,7 @@ many current walkthroughs and vignettes. Also visit the
 and engage in discussions.
 
 
-<h2 id="sessioninfo"> sessionInfo() </h2>
+# sessionInfo()
 
 Package versions used in this tutorial:
 
@@ -864,7 +842,7 @@ sessionInfo()
 ```
 
 
-<h2 id="acknowledgements"> Acknowledgments </h2>
+# Acknowledgments
 
 Research reported in this chapter was supported by the National Human Genome
 Research Institute of the National Institutes of Health under Award Number
@@ -874,7 +852,7 @@ institutions who produced and maintained the data that is used for generating
 and updating the annotation resources described here.
 
 
-<h2 id="references"> References </h2>
+# References
 
 1. Wolfgang Huber, Vincent J Carey, Robert Gentleman, Simon Anders, Marc
 Carlson, Benilton S Carvalho, Hector Corrada Bravo, Sean Davis,	Laurent Gatto,
@@ -927,9 +905,9 @@ representing biological sequences, and matching algorithms. R package version
 Database Packages. R package version 1.10.0.
 
 
-<h2 id="answers"> Answers for exercises </h2>
+# Answers for exercises
 
-<h3>Exercise 1:</h3>
+## Exercise 1:
 
 The 1st thing you need to do is look for thing from UCSC
 ```{r}
@@ -948,7 +926,7 @@ You might notice that the last two filtering steps are redundant (IOW doing the
 might suspect that there was a problem with the metadata.
 
 
-<h3>Exercise 2:</h3>
+## Exercise 2:
 
 This pulls down the oreganno annotations.  Which are described on the
 UCSC site thusly: "This track displays literature-curated regulatory
@@ -966,8 +944,7 @@ oreg
 ```
 
 
-<h3>Exercise 3:</h3>
-
+## Exercise 3:
 
 ```{r}
 keys <- "MSX2"
@@ -976,7 +953,7 @@ select(org.Hs.eg.db, keys, columns, keytype="SYMBOL")
 ```
 
 
-<h3>Exercise 4:</h3>
+## Exercise 4:
 
 ```{r}
 ## 1st get all the gene symbols
@@ -995,7 +972,7 @@ select(org.Hs.eg.db, badSymbols, "ENTREZID", "SYMBOL")
 ```
 
 
-<h3>Exercise 5:</h3>
+## Exercise 5:
 
 So to retrieve this information using select you need to do it like this:
 
@@ -1019,7 +996,7 @@ as transcripts() returns a GRanges object, so the chromosome will
 automatically be returned as part of the object.
 
 
-<h3>Exercise 6:</h3>
+## Exercise 6:
 
 ```{r}
 library(TxDb.Athaliana.BioMart.plantsmart22)
@@ -1032,7 +1009,7 @@ pay attention to the kind of gene id is being used by the TxDb
 you are looking at.
 
 
-<h3>Exercise 7:</h3>
+## Exercise 7:
 
 ```{r eval=FALSE}
 library(Homo.sapiens)
@@ -1052,7 +1029,7 @@ head(res2)
 ```
 
 
-<h3>Exercise 8:</h3>
+## Exercise 8:
 
 ```{r}
 columns(Homo.sapiens)
@@ -1077,7 +1054,8 @@ strongly recommend using TXSTART instead of CHRLOC.  Howeverm CHRLOC
 still remains in the org packages for historical reasons.
 
 
-<h3>Exercise 9</h3>
+## Exercise 9:
+
 To find the keys that match, make use of the pattern and column arguments.
 ```{r}
 library(Homo.sapiens)
@@ -1090,7 +1068,7 @@ select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
 ```
 
 
-<h3>Exercise 10:</h3>
+## Exercise 10:
 
 ```{r eval=FALSE}
 library("BSgenome.Hsapiens.UCSC.hg19")
@@ -1106,7 +1084,7 @@ res
 ```
 
 
-<h3>Exercise 11:</h3>
+## Exercise 11:
 
 ```{r}
 library("biomaRt")
@@ -1119,7 +1097,7 @@ getBM(attributes=c('go_id', 'entrezgene'),
 ```
 
 
-<h3>Exercise 12:</h3>
+## Exercise 12:
 
 ```{r}
 library(org.Hs.eg.db)
