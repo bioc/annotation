@@ -1096,7 +1096,6 @@ getBM(attributes=c('go_id', 'entrezgene'),
 
 ```
 
-
 ## Exercise 12:
 
 ```{r}
