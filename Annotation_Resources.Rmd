@@ -40,7 +40,6 @@ contains over eight hundred annotation packages. This table summarizes some
 of the more important classes of annotation objects that are often accessed
 using packages:
 
-
 <style>
 table, th, td {
     border-collapse: collapse;
