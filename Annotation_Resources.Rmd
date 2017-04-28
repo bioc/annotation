@@ -263,15 +263,6 @@ res <- grs[[1]]
 head(res, n=3)
 ```
 
-Or you might have decided that you want to see the data for the green spotted
-pufferfish by that you spotted in the orgs subset under the name 'AH13961'.
-That data could also be extracted like this:
-
-```{r}
-rabbit <- query(orgs, "Oryctolagus")[[1]]
-rabbit
-```
-
 ## AnnotationHub exercises
 
 Exercise 1: Use the AnnotationHub to extract UCSC data that is from Homo
@@ -289,13 +280,18 @@ the oreganno track and save it into a local variable.
 
 At this point you might be wondering: What is this OrgDb object about?  OrgDb
 objects are one member of a family of annotation objects that all represent
-hidden data through a shared set of methods.  So if you look closely at the
-rabbit object in the example above you can see that it contains data for the
-European rabbit Oryctolagus cuniculus (taxonomy ID = 9986).  You can learn a
-little more about it by learning about the columns method.
+hidden data through a shared set of methods.  So if you look closely at the dog
+object created below you can see it contains data for Canis familiaris
+(taxonomy ID = 9615).  You can learn a little more about it by learning about
+the columns method.
 
 ```{r}
-columns(rabbit)
+dog <- query(orgs, "Canis familiaris")[[1]]
+dog
+```
+
+```{r}
+columns(dog)
 ```
 
 The columns method gives you a vector of data types that can be retrieved from
@@ -303,10 +299,10 @@ the object that you call it on.  So the above call indicates that there are
 several different data types that can be retrieved from the tetra object.
 
 A very similar method is the keytypes method, which will list all the data
-types that can also be used as keys.  
+types that can also be used as keys. 
 
 ```{r}
-keytypes(rabbit)
+keytypes(dog)
 ```
 
 In many cases most of the things that are listed as columns will also come back
@@ -317,7 +313,7 @@ Now that you can see what kinds of things can be used as keys, you can call the
 keys method to extract out all the keys of a given key type.
 
 ```{r}
-head(keys(rabbit, keytype="ENTREZID"))
+head(keys(dog, keytype="ENTREZID"))
 ```
 
 This is useful if you need to get all the IDs of a particular kind but the keys
@@ -326,7 +322,7 @@ example, using the keys method you could also extract the gene SYMBOLS that
 contain "COX" like this:
 
 ```{r}
-keys(rabbit, keytype="SYMBOL", pattern="COX")
+keys(dog, keytype="SYMBOL", pattern="COX")
 ```
 
 Or if you really needed an other keytype, you can use the column argument to
@@ -334,17 +330,16 @@ extract the ENTREZ GENE IDs for those gene SYMBOLS that contain the string
 "COX":
 
 ```{r}
-keys(rabbit, keytype="ENTREZID", pattern="COX", column="SYMBOL")
+keys(dog, keytype="ENTREZID", pattern="COX", column="SYMBOL")
 ```
 
 But often, you will really want to extract other data that matches a particular
 key or set of keys.  For that there are two methods which you can use.  The
 more powerful of these is probably select.  Here is how you would look up the
-gene SYMBOL, and REFSEQ id for the entrez gene IDs "808231" and "808233".
+gene SYMBOL, and REFSEQ id for specific entrez gene ID.
 
 ```{r}
-select(rabbit, keys=c("808231","808233"), columns=c("SYMBOL","REFSEQ"),
-       keytype="ENTREZID")
+select(dog, keys="804478", columns=c("SYMBOL","REFSEQ"), keytype="ENTREZID")
 ```
 
 When you call it, select will return a data.frame that attempts to fill in
@@ -354,11 +349,11 @@ an expansion of the data object that is returned.  For example, watch what
 happens when we ask for the GO terms for the same entrez gene ID:
 
 ```{r}
-select(rabbit, keys="808233", columns="GO", keytype="ENTREZID")
+select(dog, keys="804478", columns="GO", keytype="ENTREZID")
 ```
 
-Because there are about 9 GO terms associated with the gene "808233", you end
-up with 9 rows in the data.frame...  This can become problematic if you then
+Because there are several GO terms associated with the gene "804478", you end
+up with many rows in the data.frame. This can become problematic if you then
 ask for several columns that have a many to one relationship to the original
 key. If you were to do that, not only would the result multiply in size, it
 would also become really hard to use.  A better strategy is to be selective
@@ -372,7 +367,7 @@ request the same basic information as in our recent select call, but instead
 using the mapIds method:
 
 ```{r}
-mapIds(rabbit, keys=c("808231","808233"), column="GO", keytype="ENTREZID")
+mapIds(dog, keys="804478", column="GO", keytype="ENTREZID")
 ```
 
 As you can see, the mapIds method allows you to simplify the result that is
@@ -387,8 +382,7 @@ function) and pass that in as an argument to multiVals.  Lets look at what
 happens when you return a list:
 
 ```{r}
-mapIds(rabbit, keys=c("808231","808233"), column="GO",
-       keytype="ENTREZID", multiVals="list")
+mapIds(dog, keys="804478", column="GO", keytype="ENTREZID", multiVals="list")
 ```
 
 Now you know how to extract information from an OrgDb object, you might find it
