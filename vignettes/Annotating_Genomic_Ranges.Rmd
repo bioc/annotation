@@ -90,7 +90,7 @@ seqlevels(vcf) <- paste0("chr", seqlevels(vcf))
 For this example we'll annotate chromosomes 3 and 18:
 
 ```{r}
-seqlevels(vcf, force=TRUE) <- c("chr3", "chr18")
+seqlevels(vcf, pruning.mode="coarse") <- c("chr3", "chr18")
 seqlevels(txdb_hg19) <- c("chr3", "chr18")
 ```
 
