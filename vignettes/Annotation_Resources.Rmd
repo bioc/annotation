@@ -161,6 +161,7 @@ the AnnotationHub users only need to load the package and then create a local
 AnnotationHub object like this:
 
 ```{r, echo=FALSE}
+library(annotation)
 ah <- AnnotationHub()
 ```
 
