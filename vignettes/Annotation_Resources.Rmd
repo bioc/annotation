@@ -161,12 +161,10 @@ the AnnotationHub users only need to load the package and then create a local
 AnnotationHub object like this:
 
 ```{r, echo=FALSE}
-library("AnnotationHub")
 ah <- AnnotationHub()
 ```
 
 ```{r, eval=FALSE}
-library("AnnotationHub")
 ah <- AnnotationHub()
 ```
 
@@ -427,7 +425,6 @@ UCSC ensembl genes track for Drosophila.  A common practice when loading these
 is to shorten the long name to 'txdb' (just as a convenience).  
 
 ```{r}
-library("TxDb.Hsapiens.UCSC.hg19.knownGene")
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 txdb
 ```
@@ -559,7 +556,6 @@ you only have one source for all your annotations.
 To try one out lets load one that was made as an annotation package:
 
 ```{r}
-library("Homo.sapiens")
 Homo.sapiens
 ```
 
@@ -614,7 +610,6 @@ can learn which organisms are already supported by using the
 available.genomes() function.
 
 ```{r}
-library("BSgenome")
 head(available.genomes())
 ```
 
@@ -625,7 +620,6 @@ an alias for the primary object that is shorter than the full package name (as
 a convenience):
 
 ```{r}
-library("BSgenome.Hsapiens.UCSC.hg19")
 ls(2)
 Hsapiens
 ```
@@ -681,7 +675,6 @@ looking at the marts available and then choosing to use one of the most popular
 marts: the "ensembl"" mart.
 
 ```{r}
-library("biomaRt")
 head(listMarts())
 ensembl <- useMart("ensembl")
 ensembl
@@ -992,7 +985,6 @@ automatically be returned as part of the object.
 ## Exercise 6:
 
 ```{r}
-library(TxDb.Athaliana.BioMart.plantsmart22)
 res <- transcripts(TxDb.Athaliana.BioMart.plantsmart22, columns = c("gene_id"))
 ```
 You will notice that the gene ids for this package are TAIR locus IDs
@@ -1005,7 +997,6 @@ you are looking at.
 ## Exercise 7:
 
 ```{r eval=FALSE}
-library(Homo.sapiens)
 keys <- keys(Homo.sapiens, keytype="TXID")
 res1 <- select(Homo.sapiens,
                keys= keys,
@@ -1016,7 +1007,6 @@ head(res1)
 
 And to do it using transcripts you do it like this:
 ```{r}
-library(Homo.sapiens)
 res2 <- transcripts(Homo.sapiens, columns="SYMBOL")
 head(res2)
 ```
@@ -1051,7 +1041,6 @@ still remains in the org packages for historical reasons.
 
 To find the keys that match, make use of the pattern and column arguments.
 ```{r}
-library(Homo.sapiens)
 xk = head(keys(Homo.sapiens, keytype="ENTREZID", pattern="X", column="SYMBOL"))
 xk
 ```
@@ -1064,7 +1053,6 @@ select(Homo.sapiens, xk, "SYMBOL", "ENTREZID")
 ## Exercise 10:
 
 ```{r eval=FALSE}
-library("BSgenome.Hsapiens.UCSC.hg19")
 ## Get the transcript ranges grouped by gene
 txby <- transcriptsBy(Homo.sapiens, by="gene")
 ## look up the entrez ID for the gene symbol 'PTEN'
@@ -1080,7 +1068,6 @@ res
 ## Exercise 11:
 
 ```{r}
-library("biomaRt")
 ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
 ids=c("1")
 getBM(attributes=c('go_id', 'entrezgene'),
@@ -1092,7 +1079,6 @@ getBM(attributes=c('go_id', 'entrezgene'),
 ## Exercise 12:
 
 ```{r}
-library(org.Hs.eg.db)
 ids=c("1")
 select(org.Hs.eg.db, keys=ids, columns="GO", keytype="ENTREZID")
 ```
