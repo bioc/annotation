@@ -38,14 +38,9 @@ imported with readVcf() from the VariantAnnotation package. Alternatively,
 the file is available as a pre-parsed VCF object in the AnnotationHub.
 
 ```{r, echo=FALSE}
-suppressPackageStartupMessages(library(VariantAnnotation))
-suppressPackageStartupMessages(library(AnnotationHub))
+suppressPackageStartupMessages(library(annotation))
 ```
 
-```{r}
-library(VariantAnnotation)
-library(AnnotationHub)
-```
 
 The Hub returns a VcfFile object with a reference to the file on disk.
 
@@ -75,12 +70,8 @@ dim(vcf)
 Overlap operations require that seqlevels and the genome of the objects match.
 Here the VCF seqlevels are modified to match the TxDb.
 
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
-```
 
 ```{r}
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
 head(seqlevels(txdb_hg19))
 seqlevels(vcf)
@@ -120,7 +111,6 @@ the following steps.
 
 Load the TxDb package and keep only the standard chromosomes.
 ```{r}
-library(TxDb.Mmusculus.UCSC.mm10.ensGene)
 txdb_mm10 <- keepStandardChromosomes(TxDb.Mmusculus.UCSC.mm10.ensGene)
 ```
 We are creating the GRanges from scratch and can specify the seqlevels 
@@ -159,12 +149,6 @@ table(loc_mm10$LOCATION)
 The ID's returned from locateVariants() can be used in select() to map 
 to ID's in other annotation packages.
 
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(org.Hs.eg.db))
-```
-```{r}
-library(org.Hs.eg.db)
-```
 
 ```{r}
 cols <- c("UNIPROT", "PFAM")
@@ -175,13 +159,6 @@ head(select(org.Hs.eg.db, keys, cols, keytype="ENTREZID"))
 The 'keytype' argument specifies that the mouse TxDb contains 
 Ensembl instead of Entrez gene id's.
 
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(org.Mm.eg.db))
-```
-
-```{r}
-library(org.Mm.eg.db)
-```
 
 ```{r}
 keys <- unique(loc_mm10$GENEID)
@@ -230,12 +207,6 @@ acid changes can be computed. The output contains one line for each
 variant-transcript match which can result in multiple lines for
 each variant.
 
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg19))
-```
-```{r}
-library(BSgenome.Hsapiens.UCSC.hg19)
-```
 
 ```{r}
 head(predictCoding(vcf, txdb_hg19, Hsapiens), 3)
