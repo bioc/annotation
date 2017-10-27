@@ -1,6 +1,6 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.0.2
+Version: 1.0.3
 Date: 2017-09-05
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
             person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
@@ -16,7 +16,9 @@ Description: Annotation resources make up a significant proportion of the Biocon
 Depends: R (>= 3.3.0),
          VariantAnnotation,
          AnnotationHub,
+         Organism.dplyr,
          TxDb.Hsapiens.UCSC.hg19.knownGene,
+         TxDb.Hsapiens.UCSC.hg38.knownGene,
          TxDb.Mmusculus.UCSC.mm10.ensGene,
          org.Hs.eg.db, org.Mm.eg.db,
          Homo.sapiens,

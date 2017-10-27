@@ -92,10 +92,10 @@ th {
       <td> Full genome sequence for Homo sapiens. </td>
     </tr>
     <tr>
-      <td> OrganismDb </td>
+      <td> Organism.dplyr </td>
       <td>
-        <a href = "http://bioconductor.org/packages/Homo.sapiens/">
-        <div> Homo.sapiens </div>
+        <a href = "http://bioconductor.org/packages/Organism.dplyr/">
+        <div> src_organism </div>
         </a>
       </td>
       <td> Collection of multiple annotations for a common organism
@@ -139,7 +139,9 @@ them with biocLite():
 ## try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
 biocLite(c("AnnotationHub", "Homo.sapiens",
+           "Organism.dplyr",
            "TxDb.Hsapiens.UCSC.hg19.knownGene",
+           "TxDb.Hsapiens.UCSC.hg38.knownGene",
            "BSgenome.Hsapiens.UCSC.hg19", "biomaRt",
            "TxDb.Athaliana.BioMart.plantsmart22"))
 ```
@@ -543,153 +545,100 @@ they compare to what you saw in the TxDb.Hsapiens.UCSC.hg19.knownGene package?
 
 # Organism.dplyr src_organism Objects
 
-So what happens if you have data from multiple different Annotation objects. For example, what if you had gene SYMBOLS (found in an OrgDb object) and you wanted to easily match those up with known gene transcript names from a UCSC based TxDb object? There is an ideal tool that can help with this kind of problem and it's called an src_organism object from the Organism.dplyr package. src_organism objects and their related methods are able to query each of OrgDb and TxDb resources for you and then merge the results back together in way that lets you pretend that you only have one source for all your annotations.
+So what happens if you have data from multiple different Annotation objects.
+For example, what if you had gene SYMBOLS (found in an OrgDb object) and you
+wanted to easily match those up with known gene transcript names from a UCSC
+based TxDb object? There is an ideal tool that can help with this kind of
+problem and it's called an src_organism object from the Organism.dplyr package.
+src_organism objects and their related methods are able to query each of OrgDb
+and TxDb resources for you and then merge the results back together in way that
+lets you pretend that you only have one source for all your annotations.
 
-```
+```{r}
 library(Organism.dplyr)
 ```
 
-src_organism objects can be created for organisms that have both an OrgDb and a TxDb.  To see organisms that can have src_organism objects made, use the function supportOrganisms():
+src_organism objects can be created for organisms that have both an OrgDb and a
+TxDb.  To see organisms that can have src_organism objects made, use the
+function supportOrganisms():
 ```{r}
-> supportedOrganisms() %>% print(n=Inf)
-# A tibble: 21 x 3
-                  organism         OrgDb                                   TxDb
-                     <chr>         <chr>                                  <chr>
- 1              Bos taurus  org.Bt.eg.db      TxDb.Btaurus.UCSC.bosTau8.refGene
- 2  Caenorhabditis elegans  org.Ce.eg.db        TxDb.Celegans.UCSC.ce11.refGene
- 3  Caenorhabditis elegans  org.Ce.eg.db         TxDb.Celegans.UCSC.ce6.ensGene
- 4        Canis familiaris  org.Cf.eg.db  TxDb.Cfamiliaris.UCSC.canFam3.refGene
- 5 Drosophila melanogaster  org.Dm.eg.db    TxDb.Dmelanogaster.UCSC.dm3.ensGene
- 6 Drosophila melanogaster  org.Dm.eg.db    TxDb.Dmelanogaster.UCSC.dm6.ensGene
- 7             Danio rerio  org.Dr.eg.db      TxDb.Drerio.UCSC.danRer10.refGene
- 8           Gallus gallus  org.Gg.eg.db      TxDb.Ggallus.UCSC.galGal4.refGene
- 9            Homo sapiens  org.Hs.eg.db      TxDb.Hsapiens.UCSC.hg18.knownGene
-10            Homo sapiens  org.Hs.eg.db      TxDb.Hsapiens.UCSC.hg19.knownGene
-11            Homo sapiens  org.Hs.eg.db      TxDb.Hsapiens.UCSC.hg38.knownGene
-12            Mus musculus  org.Mm.eg.db       TxDb.Mmusculus.UCSC.mm10.ensGene
-13            Mus musculus  org.Mm.eg.db     TxDb.Mmusculus.UCSC.mm10.knownGene
-14            Mus musculus  org.Mm.eg.db      TxDb.Mmusculus.UCSC.mm9.knownGene
-15          Macaca mulatta org.Mmu.eg.db     TxDb.Mmulatta.UCSC.rheMac3.refGene
-16          Macaca mulatta org.Mmu.eg.db     TxDb.Mmulatta.UCSC.rheMac8.refGene
-17         Pan troglodytes  org.Pt.eg.db TxDb.Ptroglodytes.UCSC.panTro4.refGene
-18       Rattus norvegicus  org.Rn.eg.db      TxDb.Rnorvegicus.UCSC.rn4.ensGene
-19       Rattus norvegicus  org.Rn.eg.db      TxDb.Rnorvegicus.UCSC.rn5.refGene
-20       Rattus norvegicus  org.Rn.eg.db      TxDb.Rnorvegicus.UCSC.rn6.refGene
-21              Sus scrofa  org.Ss.eg.db      TxDb.Sscrofa.UCSC.susScr3.refGene
+supported <- supportedOrganisms()
+print(supported, n=Inf)
 ```
 
-Notice how there are multiple entries for a single organism (e.g. three for Homo sapiens).  There is only one OrgDb per organism, but different TxDbs can be used. To specify a certain version of a TxDb to use, we can use the src_organism() function to create an src_organism object.
+Notice how there are multiple entries for a single organism (e.g. three for
+Homo sapiens).  There is only one OrgDb per organism, but different TxDbs can be
+used. To specify a certain version of a TxDb to use, we can use the
+src_organism() function to create an src_organism object.
 ```{r}
-> library(org.Hs.eg.db)
-> library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-> src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene")
-> src
-src:  sqlite 3.19.3 [/Users/da42327_ca/Library/Caches/BiocFileCache/449c41bacb63_449c41bacb63]
-tbls: id, id_accession, id_go, id_go_all, id_omim_pm, id_protein,
-  id_transcript, ranges_cds, ranges_exon, ranges_gene, ranges_tx
+library(org.Hs.eg.db)
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene")
+src
 ```
 
-We can also create one using the src_ucsc() function.  This will create an src_organism object using the most recent TxDb version available:
+We can also create one using the src_ucsc() function.  This will create an
+src_organism object using the most recent TxDb version available:
 ```{r}
-> src <- src_ucsc("Homo sapiens")
-> src
-src:  sqlite 3.19.3 [/Users/da42327_ca/Library/Caches/BiocFileCache/449c41bacb63_449c41bacb63]
-tbls: id, id_accession, id_go, id_go_all, id_omim_pm, id_protein,
-  id_transcript, ranges_cds, ranges_exon, ranges_gene, ranges_tx
+src <- src_ucsc("Homo sapiens")
+src
 ```
 
-The five methods that worked for all of the other Db objects that we have discussed (keytypes(), columns(), keys(), select(), and mapIds()) all work for src_organism objects.  Here, we use keytypes() to show which keytypes can be passed to the keytype argument of select().
+The five methods that worked for all of the other Db objects that we have
+discussed (keytypes(), columns(), keys(), select(), and mapIds()) all work for
+src_organism objects.  Here, we use keytypes() to show which keytypes can be
+passed to the keytype argument of select().
 ```{r}
-> keytypes(src)
- [1] "accnum"       "alias"        "cds_chrom"    "cds_end"      "cds_id"
- [6] "cds_name"     "cds_start"    "cds_strand"   "ensembl"      "ensemblprot"
-[11] "ensembltrans" "entrez"       "enzyme"       "evidence"     "evidenceall"
-[16] "exon_chrom"   "exon_end"     "exon_id"      "exon_name"    "exon_rank"
-[21] "exon_start"   "exon_strand"  "gene_chrom"   "gene_end"     "gene_start"
-[26] "gene_strand"  "genename"     "go"           "goall"        "ipi"
-[31] "map"          "omim"         "ontology"     "ontologyall"  "pfam"
-[36] "pmid"         "prosite"      "refseq"       "symbol"       "tx_chrom"
-[41] "tx_end"       "tx_id"        "tx_name"      "tx_start"     "tx_strand"
-[46] "tx_type"      "unigene"      "uniprot"
+keytypes(src)
 ```
 
-Use columns() to show which keytypes can be passed to the keytype argument of select().
+Use columns() to show which keytypes can be passed to the keytype argument of
+select().
 ```{r}
-> columns(src)
- [1] "accnum"       "alias"        "cds_chrom"    "cds_end"      "cds_id"
- [6] "cds_name"     "cds_start"    "cds_strand"   "ensembl"      "ensemblprot"
-[11] "ensembltrans" "entrez"       "enzyme"       "evidence"     "evidenceall"
-[16] "exon_chrom"   "exon_end"     "exon_id"      "exon_name"    "exon_rank"
-[21] "exon_start"   "exon_strand"  "gene_chrom"   "gene_end"     "gene_start"
-[26] "gene_strand"  "genename"     "go"           "goall"        "ipi"
-[31] "map"          "omim"         "ontology"     "ontologyall"  "pfam"
-[36] "pmid"         "prosite"      "refseq"       "symbol"       "tx_chrom"
-[41] "tx_end"       "tx_id"        "tx_name"      "tx_start"     "tx_strand"
-[46] "tx_type"      "unigene"      "uniprot"
+columns(src)
 ```
 
-And that's it. You can now use these objects in the same way that you use OrgDb or TxDb objects. It works the same as the base objects that it contains:
+And that's it. You can now use these objects in the same way that you use OrgDb
+or TxDb objects. It works the same as the base objects that it contains:
 ```{r}
-> select(src, keys="4488", columns=c("symbol", "tx_name"), keytype="entrez")
-Joining, by = "entrez"
-  entrez symbol    tx_name
-1   4488   MSX2 uc003mcy.4
-2   4488   MSX2 uc063juz.1
+select(src, keys="4488", columns=c("symbol", "tx_name"), keytype="entrez")
 ```
 
-Organism.dplyr also supports numerous Genomic Extractor functions allowing users to filter based on information contained in the OrgDb and TxDb objects.  To see the filters supported by a src_organism() object, use supportedFIlters():
+Organism.dplyr also supports numerous Genomic Extractor functions allowing users
+to filter based on information contained in the OrgDb and TxDb objects.  To see
+the filters supported by a src_organism() object, use supportedFIlters():
 ```{r}
-> head(supportedFilters(src))
-               filter        field
-1        AccnumFilter       accnum
-2         AliasFilter        alias
-3      CdsChromFilter    cds_chrom
-45       CdsEndFilter      cds_end
-43        CdsIdFilter       cds_id
-4       CdsNameFilter     cds_name
+head(supportedFilters(src))
 ```
 
-The ranged based accessors such as those in GenomicFeatures will also work.  There are also "*_tbl" functions (e.g. transcripts_tbl()) that return tbl objects instead of GRanges objects.  Complex filter statements can be given as input.  Here we declare a GRangesFilter and use two different type-returning accessors to query transcripts that either start with "SNORD" and are within our given GRangesFilter, or have symbol with symbol "ADA":
+The ranged based accessors such as those in GenomicFeatures will also work.
+There are also "_tbl" functions (e.g. transcripts_tbl()) that return tbl
+objects instead of GRanges objects.  Complex filter statements can be given as
+input.  Here we declare a GRangesFilter and use two different type-returning
+accessors to query transcripts that either start with "SNORD" and are within our
+given GRangesFilter, or have symbol with symbol "ADA":
 
 ```{r}
-> gr <- GRangesFilter(GenomicRanges::GRanges("chr1:44000000-55000000"))
-> transcripts(src, filter=~(symbol %startsWith% "SNORD" & gr) | symbol == "ADA")
-GRanges object with 8 ranges and 3 metadata columns:
-      seqnames               ranges strand |     tx_id     tx_name      symbol
-         <Rle>            <IRanges>  <Rle> | <integer> <character> <character>
-  [1]     chr1 [44775864, 44775943]      + |      2560  uc057fwc.1     SNORD55
-  [2]     chr1 [44776490, 44776593]      + |      2561  uc001cmk.2     SNORD46
-  [3]     chr1 [44777843, 44777912]      + |      2564  uc009vxi.4    SNORD38A
-  [4]     chr1 [44778390, 44778456]      + |      2566  uc057fwg.1    SNORD38B
-  [5]     chr1 [44778390, 44778458]      + |      2567  uc001cml.3    SNORD38B
-  [6]    chr20 [44619522, 44626491]      - |    169786  uc061xfj.1         ADA
-  [7]    chr20 [44619522, 44651742]      - |    169787  uc002xmj.4         ADA
-  [8]    chr20 [44619810, 44651691]      - |    169789  uc061xfl.1         ADA
-  -------
-  seqinfo: 455 sequences (1 circular) from hg38 genome
-  
-> transcripts_tbl(src, filter=~(symbol %startsWith% "SNORD" & gr) | symbol == "ADA")
-# A tibble: 8 x 7
-  tx_chrom tx_start   tx_end tx_strand  tx_id    tx_name   symbol
-     <chr>    <int>    <int>     <chr>  <int>      <chr>    <chr>
-1     chr1 44775864 44775943         +   2560 uc057fwc.1  SNORD55
-2     chr1 44776490 44776593         +   2561 uc001cmk.2  SNORD46
-3     chr1 44777843 44777912         +   2564 uc009vxi.4 SNORD38A
-4     chr1 44778390 44778456         +   2566 uc057fwg.1 SNORD38B
-5     chr1 44778390 44778458         +   2567 uc001cml.3 SNORD38B
-6    chr20 44619522 44626491         - 169786 uc061xfj.1      ADA
-7    chr20 44619522 44651742         - 169787 uc002xmj.4      ADA
-8    chr20 44619810 44651691         - 169789 uc061xfl.1      ADA
+gr <- GRangesFilter(GenomicRanges::GRanges("chr1:44000000-55000000"))
+transcripts(src, filter=~(symbol %startsWith% "SNORD" & gr) | symbol == "ADA")
 
+transcripts_tbl(src, filter=~(symbol %startsWith% "SNORD" & gr) | symbol == "ADA")
 ```
 
 ## Organism.dplyr exercises
 
-Exercise 7: Use the src_organism object to look up the gene symbol, transcript start and chromosome using select(). Then do the same thing using transcripts. You might expect that this call to transcripts will look the same as it did for the TxDb object, but (temporarily) it will not.
+Exercise 7: Use the src_organism object to look up the gene symbol, transcript
+start and chromosome using select(). Then do the same thing using transcripts.
+You might expect that this call to transcripts will look the same as it did for
+the TxDb object, but (temporarily) it will not.
 
-Exercise 8: Look at the results from call the columns method on the src_organism object and compare that to what happens when you call columns on the org.Hs.eg.db object and then look at a call to columns on the TxDb.Hsapiens.UCSC.hg19.knownGene object.
+Exercise 8: Look at the results from call the columns method on the src_organism
+object and compare that to what happens when you call columns on the
+org.Hs.eg.db object and then look at a call to columns on the
+TxDb.Hsapiens.UCSC.hg19.knownGene object.
 
-Exercise 9: Use the src_organism object with the transcripts method to look up the entrez gene IDs for all gene symbols that contain the letter 'X'.
+Exercise 9: Use the src_organism object with the transcripts method to look up
+the entrez gene IDs for all gene symbols that contain the letter 'X'.
 
 
 <p class="back_to_top">[ <a href="#top">Back to top</a> ]</p>
