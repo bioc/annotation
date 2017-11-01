@@ -573,7 +573,14 @@ src_organism() function to create an src_organism object.
 ```{r}
 library(org.Hs.eg.db)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+```
+```{r eval=FALSE}
 src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene")
+```
+```{r echo=FALSE}
+src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene", dpbath=tempfile())
+```
+```{r}
 src
 ```
 
