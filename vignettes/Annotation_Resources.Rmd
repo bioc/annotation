@@ -578,7 +578,7 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene")
 ```
 ```{r echo=FALSE}
-src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene", dpbath=tempfile())
+src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene", dbpath=tempfile())
 ```
 ```{r}
 src
