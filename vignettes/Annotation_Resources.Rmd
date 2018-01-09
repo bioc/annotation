@@ -586,8 +586,10 @@ src
 
 We can also create one using the src_ucsc() function.  This will create an
 src_organism object using the most recent TxDb version available:
-```{r}
+```{r eval=FALSE}
 src <- src_ucsc("Homo sapiens")
+```
+```{r}
 src
 ```
 
