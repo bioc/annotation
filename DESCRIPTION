@@ -1,6 +1,6 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.1.0
+Version: 1.1.1
 Date: 2017-09-05
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
             person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
@@ -30,7 +30,7 @@ License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-biocViews: Annotation, VariantAnnotation
+biocViews: AnnotationWorkflow, Workflow
 Workflow: true
 Suggests: knitr, rmarkdown
 NeedsCompilation: no
