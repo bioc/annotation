@@ -1,15 +1,39 @@
 ---
 title: Genomic Annotation Resources
-author: Marc RJ Carlson, Herve Pages, Sonali Arora, Valerie Obenchain,
-         and Martin Morgan
+author:
+- name: Marc RJ Carlson
+  affiliation: Fred Hutchinson Cancer Research Center, 1100 Fairview Ave. N., P.O. Box 19024, Seattle, WA, USA 98109-1024
+- name: Herve Pages
+  affiliation: Fred Hutchinson Cancer Research Center, 1100 Fairview Ave. N., P.O. Box 19024, Seattle, WA, USA 98109-1024
+- name: Sonali Arora
+  affiliation: Fred Hutchinson Cancer Research Center, 1100 Fairview Ave. N., P.O. Box 19024, Seattle, WA, USA 98109-1024
+- name: Valerie Obenchain
+  affiliation: Fred Hutchinson Cancer Research Center, 1100 Fairview Ave. N., P.O. Box 19024, Seattle, WA, USA 98109-1024
+- name: Martin Morgan
+  affiliation: Fred Hutchinson Cancer Research Center, 1100 Fairview Ave. N., P.O. Box 19024, Seattle, WA, USA 98109-1024
+  email: maintainer@bioconductor.org
 output:
-  html_document:
-    toc: true
+  BiocStyle::html_document
+date: 24 April 2018
 KeyWords: annotation, next-generation sequencing, R, Bioconductor
 vignette: >
   %\VignetteIndexEntry{Genomic Annotation Resources}
   %\VignetteEngine{knitr::rmarkdown}
 ---
+
+# Version Info
+```{r, echo=FALSE, results="hide", warning=FALSE}
+suppressPackageStartupMessages({
+library('annotation')
+})
+```
+<p>
+**R version**: `r R.version.string`
+<br />
+**Bioconductor version**: `r BiocInstaller::biocVersion()`
+<br />
+**Package version**: `r packageVersion("annotation")`
+</p>
 
 # Introduction
 

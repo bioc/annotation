@@ -1,6 +1,6 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.1.1
+Version: 1.1.2
 Date: 2017-09-05
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
             person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
@@ -32,6 +32,6 @@ LazyData: true
 VignetteBuilder: knitr
 biocViews: AnnotationWorkflow, Workflow
 Workflow: true
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, BiocStyle
 NeedsCompilation: no
 URL: http://bioconductor.org/help/workflows/annotation/Annotation_Resources/
