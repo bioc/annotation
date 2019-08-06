@@ -802,7 +802,7 @@ example, the following requests gene symbols and entrez gene IDs that are found
 on chromosome 1 of flies:
 
 ```{r}
-res <- getBM(attributes=c("hgnc_symbol", "entrezgene"),
+res <- getBM(attributes=c("hgnc_symbol", "entrezgene_id"),
                     filters = "chromosome_name",
                     values = "1", mart = ensembl)
 head(res)
@@ -1145,7 +1145,7 @@ res
 ```{r}
 ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
 ids=c("1")
-getBM(attributes=c('go_id', 'entrezgene'),
+getBM(attributes=c('go_id', 'entrezgene_id'),
 		    filters = 'entrezgene',
                     values = ids, mart = ensembl)
 
