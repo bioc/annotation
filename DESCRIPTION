@@ -1,6 +1,6 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.9.2
+Version: 1.10.0
 Date: 2017-09-05
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
             person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
