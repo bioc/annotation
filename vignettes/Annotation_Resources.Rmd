@@ -745,24 +745,24 @@ marts.  Each mart is another of a set of online web resources that are
 following a convention that allows them to work with this package. So the first
 step in using biomaRt is always to load the package and then decide which
 "mart" you want to use. Once you have made your decision, you will then  use
-the useMart() method to create a mart object in your R session.  Here we are
+the useEnsembl() method to create a mart object in your R session.  Here we are
 looking at the marts available and then choosing to use one of the most popular
 marts: the "ensembl"" mart.
 
 ```{r}
 head(listMarts())
-ensembl <- useMart("ensembl")
+ensembl <- useEnsembl("ensembl")
 ensembl
 ```
 
 Each 'mart' can contain datasets for multiple different things. So the next
 step is that you need to decide on a dataset.  Once you have chosen one, you
 will need to specify that dataset using the dataset argument when you call the
-useMart() constructor method. Here we will point to the dataset for humans.
+useEnsembl() constructor method. Here we will point to the dataset for humans.
 
 ```{r}
 head(listDatasets(ensembl))
-ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
+ensembl <- useEnsembl("ensembl",dataset="hsapiens_gene_ensembl")
 ensembl
 ```
 
@@ -1143,7 +1143,7 @@ res
 ## Exercise 11:
 
 ```{r}
-ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
+ensembl <- useEnsembl("ensembl",dataset="hsapiens_gene_ensembl")
 ids=c("1")
 getBM(attributes=c('go_id', 'entrezgene_id'),
 		    filters = 'entrezgene_id',
