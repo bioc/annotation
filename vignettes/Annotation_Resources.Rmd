@@ -749,8 +749,8 @@ the useEnsembl() method to create a mart object in your R session.  Here we are
 looking at the marts available and then choosing to use one of the most popular
 marts: the "ensembl"" mart.
 
-```{r}
-head(listMarts())
+```{r,cache=TRUE}
+listMarts()
 ensembl <- useEnsembl("ensembl")
 ensembl
 ```
@@ -760,7 +760,7 @@ step is that you need to decide on a dataset.  Once you have chosen one, you
 will need to specify that dataset using the dataset argument when you call the
 useEnsembl() constructor method. Here we will point to the dataset for humans.
 
-```{r}
+```{r,cache=TRUE}
 head(listDatasets(ensembl))
 ensembl <- useEnsembl("ensembl",dataset="hsapiens_gene_ensembl")
 ensembl
@@ -770,13 +770,13 @@ Next we need to think about attributes, values and filters. Lets start with
 attributes.  You can get a listing of the different kinds of attributes from
 biomaRt buy using the listAttributes method:
 
-```{r}
+```{r,cache=TRUE}
 head(listAttributes(ensembl))
 ```
 
 And you can see what the values for a particular attribute are by using the getBM method:
 
-```{r}
+```{r,cache=TRUE}
 head(getBM(attributes="chromosome_name", mart=ensembl))
 ```
 
@@ -792,7 +792,7 @@ specific value of "1".  Together these two argument values would request
 whatever attributes matched things on the 1st chromosome.  And just as there
 here is an accessor for attributes, there is also an accessor for filters:
 
-```{r}
+```{r,cache=TRUE}
 head(listFilters(ensembl))
 ```
 
@@ -801,7 +801,7 @@ method to put it all together and request specific data from the mart.  So for
 example, the following requests gene symbols and entrez gene IDs that are found
 on chromosome 1 of flies:
 
-```{r}
+```{r,cache=TRUE}
 res <- getBM(attributes=c("hgnc_symbol", "entrezgene_id"),
                     filters = "chromosome_name",
                     values = "1", mart = ensembl)
@@ -812,7 +812,7 @@ Of course you may have noticed that a lot of the arguments for getBM are very
 similar to what you do when you call shsapienselect.  So if it's your
 preference you can now also use the standard select methods with mart objects.
 
-```{r}
+```{r,cache=TRUE}
 head(columns(ensembl))
 ```
 
