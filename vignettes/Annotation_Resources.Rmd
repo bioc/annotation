@@ -311,8 +311,8 @@ object created below you can see it contains data for Canis familiaris
 the columns method.
 
 ```{r}
-dog <- query(orgs, "Canis familiaris")[[1]]
-dog
+query(orgs, "Canis familiaris")
+dog <- ah[["AH107053"]]
 ```
 
 ```{r}
