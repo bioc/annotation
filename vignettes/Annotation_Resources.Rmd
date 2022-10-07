@@ -311,8 +311,8 @@ object created below you can see it contains data for Canis familiaris
 the columns method.
 
 ```{r}
-dog <- query(orgs, "Canis familiaris")[[1]]
-dog
+query(orgs, "Canis familiaris")
+dog <- ah[["AH107053"]]
 ```
 
 ```{r}
@@ -742,27 +742,34 @@ PTEN gene.
 Another great annotation resource is the biomaRt package[5,6,7].  The biomaRt
 package exposes a huge family of different online annotation resources called
 marts.  Each mart is another of a set of online web resources that are
-following a convention that allows them to work with this package. So the first
-step in using biomaRt is always to load the package and then decide which
-"mart" you want to use. Once you have made your decision, you will then  use
+following a convention that allows them to work with this package. Historically 
+these marts were maintained by various projects around the world, however 
+the majority are now maintained as part of Ensembl and we'll focus on that resource
+here.  If you wish to access another BioMart instance see the biomaRt 
+vignette [Using a BioMart other than Ensembl](https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/accessing_other_marts.html).
+
+The first step in using biomaRt is always to load the package and then decide which
+"mart" you want to use. Once you have made your decision, you will then use
 the useEnsembl() method to create a mart object in your R session.  Here we are
 looking at the marts available and then choosing to use one of the most popular
-marts: the "ensembl"" mart.
+marts: the Ensembl "genes" mart.
 
-```{r,cache=TRUE}
-listMarts()
-ensembl <- useEnsembl("ensembl")
+```{r}
+listEnsembl()
+ensembl <- useEnsembl(biomart = "genes")
 ensembl
 ```
 
-Each 'mart' can contain datasets for multiple different things. So the next
+Each 'mart' can contain datasets for multiple different things.
+In our example here the "genes" mart contains separate datasets for a large 
+number of organisms.  So the next
 step is that you need to decide on a dataset.  Once you have chosen one, you
 will need to specify that dataset using the dataset argument when you call the
 useEnsembl() constructor method. Here we will point to the dataset for humans.
 
-```{r,cache=TRUE}
+```{r}
 head(listDatasets(ensembl))
-ensembl <- useEnsembl("ensembl",dataset="hsapiens_gene_ensembl")
+ensembl <- useEnsembl(biomart="genes", dataset="hsapiens_gene_ensembl")
 ensembl
 ```
 
@@ -770,13 +777,13 @@ Next we need to think about attributes, values and filters. Lets start with
 attributes.  You can get a listing of the different kinds of attributes from
 biomaRt buy using the listAttributes method:
 
-```{r,cache=TRUE}
+```{r}
 head(listAttributes(ensembl))
 ```
 
 And you can see what the values for a particular attribute are by using the getBM method:
 
-```{r,cache=TRUE}
+```{r}
 head(getBM(attributes="chromosome_name", mart=ensembl))
 ```
 
@@ -789,30 +796,33 @@ you are passing in and which you would like to know more information about.  In
 contrast, the filter represents the kind of key that you are searching for. So
 for example, you might choose a filter name of "chromosome_name" to go with
 specific value of "1".  Together these two argument values would request
-whatever attributes matched things on the 1st chromosome.  And just as there
-here is an accessor for attributes, there is also an accessor for filters:
+whatever attributes matched things on the 1st chromosome.  Just as there
+is an accessor for attributes, there is also an accessor to list all 
+available filters:
 
-```{r,cache=TRUE}
+```{r}
 head(listFilters(ensembl))
 ```
 
-So now you know about attributes, values and filters, you can call the getBM
+So now you know about attributes, values and filters, you can call the getBM()
 method to put it all together and request specific data from the mart.  So for
-example, the following requests gene symbols and entrez gene IDs that are found
-on chromosome 1 of flies:
+example, the following requests gene symbols and NCBI Gene (formerly called 
+'entrezgene') IDs that are found on chromosome 1 of humans:
 
-```{r,cache=TRUE}
-res <- getBM(attributes=c("hgnc_symbol", "entrezgene_id"),
-                    filters = "chromosome_name",
-                    values = "1", mart = ensembl)
+```{r}
+res <- getBM(attributes = c("hgnc_symbol", "entrezgene_id"),
+             filters = "chromosome_name",
+             values = "1", 
+             mart = ensembl)
 head(res)
 ```
 
 Of course you may have noticed that a lot of the arguments for getBM are very
-similar to what you do when you call shsapienselect.  So if it's your
-preference you can now also use the standard select methods with mart objects.
+similar to what you do when working with OrgDb objects.  So if it's your
+preference you can also use the standard select(), columns(), keytypes() etc
+methods with mart objects.
 
-```{r,cache=TRUE}
+```{r}
 head(columns(ensembl))
 ```
 
@@ -1143,18 +1153,18 @@ res
 ## Exercise 11:
 
 ```{r}
-ensembl <- useEnsembl("ensembl",dataset="hsapiens_gene_ensembl")
-ids=c("1")
+ensembl <- useEnsembl(biomart = "ensembl", dataset="hsapiens_gene_ensembl")
+ids <- c("1")
 getBM(attributes=c('go_id', 'entrezgene_id'),
-		    filters = 'entrezgene_id',
-                    values = ids, mart = ensembl)
-
+		  filters = 'entrezgene_id',
+      values = ids, 
+		  mart = ensembl)
 ```
 
 ## Exercise 12:
 
 ```{r}
-ids=c("1")
+ids <- c("1")
 select(org.Hs.eg.db, keys=ids, columns="GO", keytype="ENTREZID")
 ```
 
