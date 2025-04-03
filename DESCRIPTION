@@ -1,12 +1,13 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.31.0
+Version: 1.31.1
 Date: 2021-06-30
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
             person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
             person(role="aut", "Sonali", "Arora", email = "sarora@fredhutch.org"),
             person(role="aut", "Valerie", "Obenchain", email = "valerie.obenchain@roswellpark.org"),
             person(role="aut", "Martin", "Morgan", email = "martin.morgan@roswellpark.org"),
+	    person("Lori", "Shepherd", role="ctb", email = "Lori.Shepherd@roswellpark.org"),
             person(role="cre", "Bioconductor Package Maintainer", email = "maintainer@bioconductor.org"))
 Description: Annotation resources make up a significant proportion of the Bioconductor
     project. And there are also a diverse set of online resources available
