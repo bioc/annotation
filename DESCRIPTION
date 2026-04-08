@@ -1,9 +1,10 @@
 Package: annotation
 Title: Genomic Annotation Resources
-Version: 1.35.0
-Date: 2025-07-18
+Version: 1.35.1
+Date: 2026-04-06
+Encoding: UTF-8
 Authors@R: c(person(role="aut", "Marc", "RJ Carlson", email = "mrjc42@gmail.com"),
-            person(role="aut", "Herve", "Pages", email = "hpages@fredhutch.org"),
+            person(role="aut", "Hervé", "Pagès", email = "hpages.on.github@gmail.com"),
             person(role="aut", "Sonali", "Arora", email = "sarora@fredhutch.org"),
             person(role="aut", "Valerie", "Obenchain", email = "valerie.obenchain@roswellpark.org"),
             person(role="aut", "Martin", "Morgan", email = "martin.morgan@roswellpark.org"),
@@ -18,7 +19,6 @@ Depends: R (>= 3.3.0),
          GenomeInfoDb,
          VariantAnnotation,
          AnnotationHub,
-         Organism.dplyr,
          TxDb.Hsapiens.UCSC.hg19.knownGene,
          TxDb.Hsapiens.UCSC.hg38.knownGene,
          TxDb.Mmusculus.UCSC.mm10.ensGene,
@@ -29,8 +29,6 @@ Depends: R (>= 3.3.0),
          BSgenome,
          TxDb.Athaliana.BioMart.plantsmart22
 License: Artistic-2.0
-Encoding: UTF-8
-LazyData: true
 VignetteBuilder: knitr
 biocViews: AnnotationWorkflow, Workflow
 Workflow: true
